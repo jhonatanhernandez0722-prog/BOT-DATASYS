@@ -68,13 +68,13 @@
       padding: 15px 22px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       gap: 16px;
       color: var(--white);
       background: var(--green-deep);
     }
 
-    .identity { display: flex; align-items: center; justify-content: center; min-width: 0; }
+    .identity { display: flex; align-items: center; justify-content: flex-start; min-width: 0; }
 
     .logo-frame {
       width: 168px;
@@ -177,6 +177,13 @@
     }
 
     .message-error { color: var(--danger); background: #fff7f5; border-color: #f0d3ce; }
+
+    .message-content { display: flex; flex-direction: column; gap: 7px; }
+    .message-content p { margin: 0; }
+    .message-heading { color: var(--green-dark); font-weight: 700; }
+    .message-list { display: grid; gap: 4px; margin: 0; padding-left: 20px; }
+    .message-list li { padding-left: 2px; }
+    .message-list li::marker { color: var(--green-deep); }
 
     .typing { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; }
     .typing span { width: 6px; height: 6px; border-radius: 50%; background: #73847a; animation: pulse 1s ease-in-out infinite; }
@@ -325,7 +332,7 @@
         </div>
         <div class="composer-area">
           <div class="suggestions" aria-label="Preguntas frecuentes">
-            <button class="suggestion" type="button" data-question="¿Cuál es el teléfono de contacto?">Teléfono</button>
+            <a class="suggestion" href="https://wa.me/573246249237" target="_blank" rel="noopener noreferrer">Teléfono</a>
             <button class="suggestion" type="button" data-question="¿Cuál es el correo electrónico?">Correo</button>
             <button class="suggestion" type="button" data-question="¿Cuál es el sitio web?">Sitio web</button>
             <button class="suggestion" type="button" data-question="¿Cuál es la dirección?">Dirección</button>
@@ -355,10 +362,49 @@
     function addMessage(text, type = "bot") {
       const message = document.createElement("div");
       message.className = `message message-${type}`;
-      message.textContent = text;
+      if (type === "bot" && text) {
+        renderBotMessage(message, text);
+      } else {
+        message.textContent = text;
+      }
       messages.append(message);
       messages.scrollTop = messages.scrollHeight;
       return message;
+    }
+
+    function renderBotMessage(container, text) {
+      const content = document.createElement("div");
+      content.className = "message-content";
+      let list = null;
+
+      for (const line of text.split("\n")) {
+        const value = line.trim();
+        if (!value) {
+          list = null;
+          continue;
+        }
+
+        if (value.startsWith("- ")) {
+          if (!list) {
+            list = document.createElement("ul");
+            list.className = "message-list";
+            content.append(list);
+          }
+          const item = document.createElement("li");
+          item.textContent = value.slice(2);
+          list.append(item);
+          continue;
+        }
+
+        list = null;
+        const isHeading = /^(DATA ANALYTICS Y BIG DATA|NUESTROS SERVICIOS DE DESARROLLO|DATA \d{2}|DEV \d{2})/i.test(value);
+        const paragraph = document.createElement(isHeading ? "strong" : "p");
+        if (isHeading) paragraph.className = "message-heading";
+        paragraph.textContent = value;
+        content.append(paragraph);
+      }
+
+      container.replaceChildren(content);
     }
 
     async function checkService() {
@@ -396,7 +442,7 @@
         if (!response.ok || typeof result.response !== "string") {
           throw new Error("No fue posible obtener una respuesta.");
         }
-        typing.textContent = result.response;
+        renderBotMessage(typing, result.response);
         typing.removeAttribute("aria-label");
         status.dataset.state = "online";
         statusLabel.textContent = "En línea";

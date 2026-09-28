@@ -18,6 +18,8 @@ class PublicChatPageTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('id="chat-form"', response.text)
         self.assertIn('alt="DataSys Latam Group"', response.text)
         self.assertNotIn("Asistente virtual", response.text)
+        self.assertIn('href="https://wa.me/573246249237"', response.text)
+        self.assertIn('rel="noopener noreferrer"', response.text)
         self.assertNotIn('data-question="¿Cuál es el horario?', response.text)
         self.assertEqual(response.text.count('class="suggestion"'), 4)
 
