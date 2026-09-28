@@ -19,7 +19,10 @@ class PublicChatPageTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('alt="DataSys Latam Group"', response.text)
         self.assertNotIn("Asistente virtual", response.text)
         self.assertIn('href="https://wa.me/573246249237"', response.text)
-        self.assertIn('href="mailto:contacto@datasyslatam.com"', response.text)
+        self.assertIn(
+            'href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=contacto%40datasyslatam.com"',
+            response.text,
+        )
         self.assertIn('href="https://datasyslatam.com/"', response.text)
         self.assertIn('href="https://www.google.com/maps/search/', response.text)
         self.assertIn('data-question="¿Cuál es la dirección?"', response.text)
