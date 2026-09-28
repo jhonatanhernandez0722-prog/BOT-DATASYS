@@ -1,6 +1,6 @@
 # Chatbot empresarial para WhatsApp
 
-Backend local en Python y FastAPI para probar respuestas predeterminadas. No conecta con WhatsApp ni utiliza inteligencia artificial.
+Backend en Python y FastAPI para responder preguntas a partir de documentos de la empresa. Incluye integración con WhatsApp Cloud API; no utiliza inteligencia artificial.
 
 ## Requisitos
 
@@ -34,6 +34,15 @@ python -m pip install -r requirements.txt
 ```
 
 Configura `COMPANY_NAME` en `.env`. Las respuestas de ejemplo y los textos entre corchetes se pueden editar en `app/responses.py`.
+
+## Conectar WhatsApp Cloud API
+
+1. Copia `.env.example` como `.env` y configura `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN` y `WHATSAPP_APP_SECRET`. Usa un token vigente generado en Meta; si compartiste uno públicamente, revócalo y genera otro. No subas `.env` al repositorio.
+2. Instala dependencias con `python -m pip install -r requirements.txt` y ejecuta el backend.
+3. Publica el servidor detrás de una URL HTTPS accesible desde internet. En el panel de Meta, configura esa URL seguida de `/webhook`, usa el mismo `WHATSAPP_VERIFY_TOKEN` y suscribe el webhook al campo `messages`.
+4. Envía un mensaje de texto al número de prueba o al número conectado. El backend busca la respuesta con el motor actual y contesta usando el Phone Number ID.
+
+El endpoint `GET /webhook` realiza la verificación de Meta y `POST /webhook` valida `X-Hub-Signature-256` usando el secreto de la aplicación. Se procesan mensajes de texto; otros tipos de evento se reconocen y se ignoran. El identificador de la cuenta Business no se requiere para enviar mensajes: se usa el Phone Number ID.
 
 ## Documentos de la empresa
 
