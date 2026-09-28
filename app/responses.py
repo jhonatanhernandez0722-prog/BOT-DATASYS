@@ -32,6 +32,14 @@ INTENT_KEYWORDS = {
         "propuesta de valor de desarrollo",
         "propuesta de valor del desarrollo",
     ],
+    "data_analytics": [
+        "data analytics y big data",
+        "data analytics",
+        "big data",
+        "analitica de datos",
+        "analitica avanzada",
+        "ingenieria de datos",
+    ],
     "propuesta_valor": ["propuesta de valor", "valor de datasys"],
     "nombre_empresa": [
         "como se llama la empresa",
@@ -96,10 +104,22 @@ INTENT_KEYWORDS = {
         "valores corporativos",
         "valores de datasys",
     ],
-    "telefono": ["telefono", "numero de telefono", "celular", "numero para llamar"],
-    "correo": ["correo", "correo electronico", "email"],
-    "sitio_web": ["pagina web", "sitio web", "website", "pagina de internet"],
-    "direccion": ["direccion", "direccion fisica", "domicilio"],
+    "telefono": [
+        "telefono", "numero de telefono", "celular", "numero para llamar",
+        "telefono de contacto", "numero de contacto", "whatsapp",
+    ],
+    "correo": [
+        "correo", "correo electronico", "email", "correo de contacto",
+        "email de contacto",
+    ],
+    "sitio_web": [
+        "pagina web", "sitio web", "website", "pagina de internet",
+        "url", "dominio",
+    ],
+    "direccion": [
+        "direccion", "direccion fisica", "domicilio", "como llegar",
+        "ubicacion de la oficina",
+    ],
     "contacto": [
         "contacto",
         "como contacto",
@@ -159,6 +179,9 @@ INTENT_SEARCH_TERMS = {
     "propuesta_valor_software": [
         "propuesta", "valor", "software", "procesos", "automatizados", "plataformas",
     ],
+    "data_analytics": [
+        "data", "analytics", "big", "datos", "analitica", "inteligencia",
+    ],
     "propuesta_valor": [
         "tecnologia", "funcionalidad", "transformacion", "necesidades", "soluciones",
         "consultoria", "innovacion",
@@ -212,6 +235,7 @@ INTENT_SECTION_HEADINGS = {
 }
 
 INTENT_CONTEXT_SECTIONS = {
+    "data_analytics": ("data analytics y big data", None),
     "propuesta_valor": ("mas que tecnologia disenamos funcionalidad", None),
     "propuesta_valor_data": ("nuestra propuesta de valor", "data analytics"),
     "propuesta_valor_software": ("nuestra propuesta de valor", "desarrollo de software"),
@@ -255,6 +279,13 @@ SERVICE_LEVEL_INTENTS = {
     "servicios_software": ("dev", 3, "Niveles de desarrollo DEV"),
 }
 
+DATA_STAGE_INTENTS = {
+    "data_conocer": (1, "Conocer", ("conocer",)),
+    "data_entender": (2, "Entender", ("entender",)),
+    "data_predecir": (3, "Predecir", ("predecir", "prediccion")),
+    "data_decidir": (4, "Decidir", ("decidir", "decision")),
+}
+
 FALLBACK_RESPONSE = (
     "No encontré información sobre esa pregunta en los documentos disponibles. "
     "Por favor, comunícate con un asesor."
@@ -262,6 +293,7 @@ FALLBACK_RESPONSE = (
 
 MINIMUM_RELEVANCE_SCORE = 3
 MAX_RESPONSE_FRAGMENT_LENGTH = 500
+MAX_CONTEXT_SECTION_LENGTH = 900
 
 
 def build_main_menu(company_name: str) -> str:

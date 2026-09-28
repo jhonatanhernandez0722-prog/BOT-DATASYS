@@ -6,11 +6,13 @@ from collections.abc import Mapping
 from app.responses import (
     CONTACT_FIELD_PATTERNS,
     COMPANY_LEGAL_NAME,
+    DATA_STAGE_INTENTS,
     FALLBACK_RESPONSE,
     INTENT_CONTEXT_SECTIONS,
     INTENT_KEYWORDS,
     INTENT_SECTION_HEADINGS,
     INTENT_SEARCH_TERMS,
+    MAX_CONTEXT_SECTION_LENGTH,
     MAX_RESPONSE_FRAGMENT_LENGTH,
     MINIMUM_RELEVANCE_SCORE,
     SECTION_BOUNDARY_HEADINGS,
@@ -79,17 +81,50 @@ def _normalize_tokens(text: str) -> set[str]:
     return tokens
 
 
+def _matches_keyword(normalized_message: str, keyword: str) -> bool:
+    normalized_keyword = _normalize_text(keyword)
+    pattern = rf"(?<!\w){re.escape(normalized_keyword)}(?!\w)"
+    return re.search(pattern, normalized_message) is not None
+
+
 def _find_intent(message: str) -> str | None:
     normalized_message = _normalize_text(message)
 
-    for intent, keywords in INTENT_KEYWORDS.items():
-        for keyword in keywords:
-            normalized_keyword = _normalize_text(keyword)
-            pattern = rf"(?<!\w){re.escape(normalized_keyword)}(?!\w)"
-            if re.search(pattern, normalized_message):
-                return intent
+    for intent, (stage_number, _, stage_terms) in DATA_STAGE_INTENTS.items():
+        has_stage = any(
+            _matches_keyword(normalized_message, term) for term in stage_terms
+        )
+        has_stage_number = re.search(
+            rf"(?<!\w)data\s+0?{stage_number}(?!\w)", normalized_message
+        ) is not None
+        has_service_context = any(
+            _matches_keyword(normalized_message, term)
+            for term in (
+                "servicio", "servicios", "ofrece", "nivel", "etapa", "fase", "datos"
+            )
+        )
+        if has_stage_number or (has_stage and has_service_context):
+            return intent
 
-    return None
+    if _matches_keyword(normalized_message, "propuesta de valor"):
+        if any(
+            _matches_keyword(normalized_message, term)
+            for term in ("data analytics", "big data", "analitica", "datos")
+        ):
+            return "propuesta_valor_data"
+        if any(
+            _matches_keyword(normalized_message, term)
+            for term in ("software", "desarrollo", "soluciones web")
+        ):
+            return "propuesta_valor_software"
+
+    matches = []
+    for priority, (intent, keywords) in enumerate(INTENT_KEYWORDS.items()):
+        for keyword in keywords:
+            if _matches_keyword(normalized_message, keyword):
+                matches.append((len(_normalize_text(keyword)), -priority, intent))
+
+    return max(matches)[2] if matches else None
 
 
 def _iter_fragments(content: str):
@@ -129,6 +164,7 @@ def _find_context_section(
 ) -> str | None:
     heading, required_context = INTENT_CONTEXT_SECTIONS[intent]
     normalized_heading = _normalize_text(heading)
+    best_section = None
 
     for _, content in sorted(
         documents.items(), key=lambda document: (document[0].casefold(), document[0])
@@ -139,10 +175,16 @@ def _find_context_section(
                 continue
 
             if required_context:
-                preceding_text = " ".join(
-                    _normalize_text(item) for item in lines[max(0, index - 10):index]
-                )
-                if _normalize_text(required_context) not in preceding_text:
+                normalized_context = _normalize_text(required_context)
+                context_found = False
+                for preceding_line in reversed(lines[max(0, index - 10):index]):
+                    normalized_line = _normalize_text(preceding_line)
+                    if normalized_context in normalized_line:
+                        context_found = True
+                        break
+                    if _is_section_boundary(preceding_line):
+                        break
+                if not context_found:
                     continue
 
             section_lines = [line.strip()]
@@ -152,7 +194,7 @@ def _find_context_section(
                 if not candidate or _is_section_boundary(candidate):
                     break
 
-                remaining = MAX_RESPONSE_FRAGMENT_LENGTH - section_length - 1
+                remaining = MAX_CONTEXT_SECTION_LENGTH - section_length - 1
                 if remaining <= 0:
                     break
                 if len(candidate) > remaining:
@@ -165,9 +207,11 @@ def _find_context_section(
                 section_length += len(candidate) + 1
 
             if len(section_lines) > 1:
-                return "\n".join(section_lines)
+                section = "\n".join(section_lines)
+                if best_section is None or len(section) > len(best_section):
+                    best_section = section
 
-    return None
+    return best_section
 
 
 def _find_contact_response(
@@ -297,6 +341,138 @@ def _find_service_levels(
     return f"{title}:\n" + "\n".join(level_lines)
 
 
+def _find_data_stage_services(
+    documents: Mapping[str, str],
+    intent: str,
+) -> str | None:
+    stage_number, stage_name, _ = DATA_STAGE_INTENTS[intent]
+    heading_pattern = re.compile(rf"^data\s+0?{stage_number}\b")
+    best_items: list[str] = []
+
+    for _, content in sorted(
+        documents.items(), key=lambda document: (document[0].casefold(), document[0])
+    ):
+        lines = content.splitlines()
+        for index, line in enumerate(lines):
+            if heading_pattern.match(_normalize_text(line)) is None:
+                continue
+
+            in_services = False
+            items = []
+            for candidate in lines[index + 1:]:
+                candidate = candidate.strip()
+                if not candidate:
+                    continue
+
+                normalized_candidate = _normalize_text(candidate)
+                if (
+                    re.match(r"^data\s+0?\d+\b", normalized_candidate)
+                    or normalized_candidate.startswith("el resultado")
+                    or normalized_candidate.startswith("data insight prediction action")
+                    or normalized_candidate.startswith("cada dato cuenta")
+                ):
+                    break
+                if normalized_candidate == "servicios":
+                    in_services = True
+                    continue
+                if not in_services:
+                    continue
+
+                item = re.sub(r"^[-•]\s*", "", candidate).strip()
+                response = f"DATA {stage_number:02d} — {stage_name.upper()}:\n"
+                response += "\n".join(f"- {service}" for service in [*items, item])
+                if len(response) > MAX_RESPONSE_FRAGMENT_LENGTH:
+                    break
+                items.append(item)
+
+            if len(items) > len(best_items):
+                best_items = items
+
+    if not best_items:
+        return None
+    return (
+        f"DATA {stage_number:02d} — {stage_name.upper()}:\n"
+        + "\n".join(f"- {service}" for service in best_items)
+    )
+
+
+def _find_development_services(documents: Mapping[str, str]) -> str | None:
+    heading_pattern = re.compile(r"^dev\s+0?(\d+)\b")
+    service_pattern = re.compile(r"^servicios\s*:\s*(.+)$", re.IGNORECASE)
+    groups: dict[int, tuple[str, list[str]]] = {}
+
+    for _, content in sorted(
+        documents.items(), key=lambda document: (document[0].casefold(), document[0])
+    ):
+        lines = content.splitlines()
+        for index, line in enumerate(lines):
+            match = heading_pattern.match(_normalize_text(line))
+            if match is None:
+                continue
+
+            number = int(match.group(1))
+            if number not in (1, 2, 3):
+                continue
+
+            title = _format_level_title(line, "dev")
+            services = []
+            for candidate in lines[index + 1:]:
+                candidate = candidate.strip()
+                if not candidate:
+                    continue
+
+                normalized_candidate = _normalize_text(candidate)
+                if (
+                    heading_pattern.match(normalized_candidate)
+                    or normalized_candidate.startswith("el resultado")
+                    or normalized_candidate.startswith("el diferencial datasys")
+                ):
+                    break
+
+                service_match = service_pattern.match(candidate)
+                if service_match is not None:
+                    services.extend(
+                        item.strip(" .;")
+                        for item in re.split(r",\s*", service_match.group(1))
+                        if item.strip(" .;")
+                    )
+
+            current = groups.get(number)
+            if services and (current is None or len(services) > len(current[1])):
+                groups[number] = (title, services)
+
+    if not groups:
+        return None
+
+    return "\n\n".join(
+        f"{title}\n" + "\n".join(f"- {service}" for service in services)
+        for _, (title, services) in sorted(groups.items())
+    )
+
+
+def _find_service_catalog(
+    documents: Mapping[str, str],
+    include_data: bool = True,
+    include_development: bool = True,
+) -> str | None:
+    sections = []
+    if include_data:
+        stages = [
+            _find_data_stage_services(documents, intent)
+            for intent in DATA_STAGE_INTENTS
+        ]
+        stages = [stage for stage in stages if stage]
+        if stages:
+            sections.append("DATA ANALYTICS Y BIG DATA\n" + "\n\n".join(stages))
+
+    if include_development:
+        development = _find_development_services(documents)
+        if development:
+            sections.append("NUESTROS SERVICIOS DE DESARROLLO\n" + development)
+
+    return "\n\n".join(sections) if sections else None
+
+
 def _score_fragment(
     fragment: str,
     query_tokens: set[str],
@@ -316,8 +492,27 @@ def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -
     if intent is None:
         return FALLBACK_RESPONSE
 
+    if intent in {"servicios", "servicios_data"}:
+        catalog = _find_service_catalog(
+            documents,
+            include_data=True,
+            include_development=intent == "servicios",
+        )
+        if catalog is not None:
+            return catalog
+
+    if intent == "servicios_software":
+        catalog = _find_service_catalog(
+            documents, include_data=False, include_development=True
+        )
+        if catalog is not None:
+            return catalog
+
     if intent in SERVICE_LEVEL_INTENTS:
         return _find_service_levels(documents, intent) or FALLBACK_RESPONSE
+
+    if intent in DATA_STAGE_INTENTS:
+        return _find_data_stage_services(documents, intent) or FALLBACK_RESPONSE
 
     if intent == "nombre_empresa":
         return _find_company_name(documents) or FALLBACK_RESPONSE

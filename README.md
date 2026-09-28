@@ -44,6 +44,10 @@ Configura `COMPANY_NAME` en `.env`. Las respuestas de ejemplo y los textos entre
 
 El endpoint `GET /webhook` realiza la verificación de Meta y `POST /webhook` valida `X-Hub-Signature-256` usando el secreto de la aplicación. Se procesan mensajes de texto; otros tipos de evento se reconocen y se ignoran. El identificador de la cuenta Business no se requiere para enviar mensajes: se usa el Phone Number ID.
 
+## Interfaz web pública
+
+La página disponible en `/` permite conversar con el bot desde un navegador y consume el endpoint `POST /chat` del mismo backend. Al desplegar en Vercel, se puede compartir directamente la URL raíz del proyecto. Las rutas de WhatsApp `/webhook` y `/webhook/whatsapp` siguen disponibles.
+
 ## Documentos de la empresa
 
 Coloca los archivos Word `.docx` en `public/documents/`, en la raíz del proyecto (al mismo nivel que `app/`). No es necesario registrar sus nombres en el código. Se leen los párrafos no vacíos; archivos de otros formatos se ignoran. Un documento dañado se omite y se registra en el log, sin impedir que se lean los demás.

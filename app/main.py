@@ -1,11 +1,13 @@
 import json
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel, Field, field_validator
-from starlette.responses import PlainTextResponse
+from starlette.responses import FileResponse, PlainTextResponse
 
 from app.bot import get_bot_response
 from app.config import (
+    DOCUMENTS_DIRECTORY,
     DOCUMENT_PREVIEW_LENGTH,
     WHATSAPP_ACCESS_TOKEN,
     WHATSAPP_APP_SECRET,
@@ -20,6 +22,7 @@ from app.whatsapp import (
 )
 
 app = FastAPI(title="Chatbot empresarial para WhatsApp")
+CHAT_INTERFACE_FILE = Path(__file__).resolve().parent.parent / "public" / "index.html"
 
 
 class ChatRequest(BaseModel):
@@ -64,6 +67,11 @@ def _make_document_preview(name: str, content: str) -> DocumentPreview:
     )
 
 
+@app.get("/", include_in_schema=False)
+def chat_interface() -> FileResponse:
+    return FileResponse(CHAT_INTERFACE_FILE)
+
+
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
@@ -76,6 +84,11 @@ def list_documents() -> DocumentsResponse:
         for name, content in app.state.documents.items()
     ]
     return DocumentsResponse(documents=documents)
+
+
+@app.get("/documents/Logo.png", include_in_schema=False)
+def company_logo() -> FileResponse:
+    return FileResponse(DOCUMENTS_DIRECTORY / "Logo.png", media_type="image/png")
 
 
 @app.get("/documents/{filename}", response_model=DocumentPreview)

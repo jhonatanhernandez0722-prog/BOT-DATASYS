@@ -66,6 +66,60 @@ class BotDocumentSearchTests(unittest.TestCase):
             "- Indicadores comerciales, financieros y operativos",
         )
 
+    def test_general_services_are_grouped_by_data_and_development_core(self) -> None:
+        documents = {
+            "servicios.docx": (
+                "DATA 01 — CONOCER ¿Qué está pasando en mi empresa?\n"
+                "Servicios\nDashboards ejecutivos\nPower BI\n"
+                "DATA 02 — ENTENDER ¿Por qué está pasando?\n"
+                "Servicios\nAnalítica exploratoria\n"
+                "DATA 03 — PREDECIR ¿Qué probablemente va a pasar?\n"
+                "Servicios\nForecasting\nMachine Learning\n"
+                "DATA 04 — DECIDIR ¿Qué debería hacer?\n"
+                "Servicios\nIA generativa sobre datos empresariales\n"
+                "NUESTROS SERVICIOS DE DESARROLLO\n"
+                "DEV 01 — PRESENCIA DIGITAL Y E-COMMERCE (Sitios Web Inteligentes)\n"
+                "Servicios: Sitios web corporativos, Landing pages, E-commerce.\n"
+                "DEV 02 — SOFTWARE A LA MEDIDA (Sistemas Corporativos)\n"
+                "Servicios: CRMs personalizados, Automatización de procesos.\n"
+                "DEV 03 — RESCATE Y MANTENIMIENTO (Proyectos Externos)\n"
+                "Servicios: Auditoría de código, Optimización de rendimiento."
+            )
+        }
+
+        response = get_bot_response("¿Qué servicios ofrecen?", documents)
+        self.assertIn("DATA ANALYTICS Y BIG DATA", response)
+        self.assertIn("DATA 01 — CONOCER", response)
+        self.assertIn("DATA 04 — DECIDIR", response)
+        self.assertIn("NUESTROS SERVICIOS DE DESARROLLO", response)
+        self.assertIn("DEV 03 — RESCATE Y MANTENIMIENTO", response)
+        self.assertIn("- E-commerce", response)
+        self.assertIn("- Automatización de procesos", response)
+
+    def test_data_and_development_service_questions_show_their_full_group(self) -> None:
+        documents = {
+            "services.docx": (
+                "DATA 01 — CONOCER\nServicios\nDashboards\n"
+                "DATA 02 — ENTENDER\nServicios\nAnalítica exploratoria\n"
+                "DATA 03 — PREDECIR\nServicios\nForecasting\n"
+                "DATA 04 — DECIDIR\nServicios\nAgentes de IA\n"
+                "DEV 01 — PRESENCIA DIGITAL (Sitios Web)\n"
+                "Servicios: Sitios web corporativos, E-commerce.\n"
+                "DEV 02 — SOFTWARE A LA MEDIDA (Sistemas)\n"
+                "Servicios: CRMs, Automatización de procesos.\n"
+                "DEV 03 — RESCATE Y MANTENIMIENTO (Proyectos)\n"
+                "Servicios: Auditoría de código."
+            )
+        }
+
+        data_response = get_bot_response("¿Qué servicios de Data Analytics ofrecen?", documents)
+        software_response = get_bot_response("¿Qué servicios de desarrollo ofrecen?", documents)
+        self.assertIn("DATA 04 — DECIDIR", data_response)
+        self.assertNotIn("NUESTROS SERVICIOS DE DESARROLLO", data_response)
+        self.assertIn("NUESTROS SERVICIOS DE DESARROLLO", software_response)
+        self.assertIn("DEV 01 — PRESENCIA DIGITAL", software_response)
+        self.assertIn("DEV 03 — RESCATE Y MANTENIMIENTO", software_response)
+
     def test_four_data_levels_are_distinct_from_service_offerings(self) -> None:
         documents = {
             "analitica.docx": (
@@ -220,6 +274,40 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
         self.assertIn("Agentes de IA", artificial_intelligence)
         self.assertNotIn("Modelos de riesgo", artificial_intelligence)
 
+    def test_each_data_stage_returns_its_own_services(self) -> None:
+        documents = {
+            "data.docx": (
+                "DATA 01 — CONOCER ¿Qué está pasando en mi empresa?\n"
+                "Servicios\nDashboards ejecutivos y operativos\nPower BI\n"
+                "El resultado: una visión clara.\n"
+                "DATA 02 — ENTENDER ¿Por qué está pasando?\n"
+                "Servicios\nAnalítica exploratoria\nAnálisis de correlaciones\n"
+                "El resultado: comprender las causas.\n"
+                "DATA 03 — PREDECIR ¿Qué probablemente va a pasar?\n"
+                "Servicios\nForecasting\nMachine Learning\nModelos de riesgo\n"
+                "El resultado: anticiparse.\n"
+                "DATA 04 — DECIDIR ¿Qué debería hacer?\n"
+                "Servicios\nIA generativa sobre datos empresariales\nAgentes de IA\n"
+                "DATA → INSIGHT → PREDICTION → ACTION\n"
+                "Cada dato cuenta. Cada análisis revela. Cada predicción anticipa."
+            )
+        }
+        cases = (
+            ("¿Qué servicios ofrece DATA 01?", "Dashboards ejecutivos", "Power BI", "Forecasting"),
+            ("¿Qué servicios hay para entender?", "Analítica exploratoria", "Análisis de correlaciones", "Agentes de IA"),
+            ("¿Qué servicios tiene el nivel de predicción?", "Forecasting", "Modelos de riesgo", "Power BI"),
+            ("¿Qué servicios incluye DATA 04?", "IA generativa", "Agentes de IA", "Analítica exploratoria"),
+        )
+
+        for question, expected, also_expected, excluded in cases:
+            with self.subTest(question=question):
+                response = get_bot_response(question, documents)
+                self.assertIn(expected, response)
+                self.assertIn(also_expected, response)
+                self.assertNotIn(excluded, response)
+                if "DATA 04" in question:
+                    self.assertNotIn("Cada dato cuenta", response)
+
     def test_contact_questions_extract_each_field(self) -> None:
         documents = {
             "contacto.docx": (
@@ -245,6 +333,87 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
             "Carrera 51B",
             get_bot_response("¿Cuál es la dirección?", documents),
         )
+
+    def test_contact_questions_support_common_wording(self) -> None:
+        documents = {
+            "contacto.docx": (
+                "Teléfono: +57 324 624 9237\n"
+                "Correo electrónico: contacto@datasyslatam.com\n"
+                "Sitio web: www.datasyslatam.com\n"
+                "Dirección: Carrera 51B N° 106 - 250, Barranquilla, Colombia"
+            )
+        }
+        self.assertIn(
+            "+57 324 624 9237",
+            get_bot_response("¿Cuál es el número de contacto?", documents),
+        )
+        self.assertIn(
+            "contacto@datasyslatam.com",
+            get_bot_response("¿Cuál es el email de contacto?", documents),
+        )
+        self.assertIn(
+            "www.datasyslatam.com",
+            get_bot_response("¿Cuál es el dominio?", documents),
+        )
+        self.assertIn(
+            "Barranquilla, Colombia",
+            get_bot_response("¿Cómo llegar a la oficina?", documents),
+        )
+
+    def test_data_analytics_overview_matches_broad_questions(self) -> None:
+        documents = {
+            "data.docx": (
+                "Data Analytics y Big Data\n"
+                "DataSys Latam Group S.A.S.\n"
+                "Nit: 902051334-5\n"
+                "DATA ANALYTICS Y BIG DATA\n"
+                "Tus datos ya tienen valor. Nosotros los convertimos en inteligencia.\n"
+                "DataSys Latam Group.\n"
+                "En DataSys Latam Group S.A.S. transformamos los datos de las organizaciones "
+                "en conocimiento estratégico para impulsar mejores decisiones, eficiencia "
+                "e innovación. Integramos ingeniería de datos, Big Data, analítica avanzada "
+                "e inteligencia artificial para conectar información dispersa, convertirla "
+                "en conocimiento confiable y llevarla desde el análisis hasta la acción.\n"
+                "NUESTRA PROPUESTA DE VALOR\n"
+                "No queremos ser simplemente otro proveedor de Business Intelligence."
+            )
+        }
+
+        for question in (
+            "Cuéntame sobre Data Analytics y Big Data",
+            "¿Qué hace DataSys en analítica de datos?",
+            "¿Qué es Big Data?",
+        ):
+            with self.subTest(question=question):
+                response = get_bot_response(question, documents)
+                self.assertIn("Tus datos ya tienen valor", response)
+                self.assertIn("desde el análisis hasta la acción", response)
+                self.assertNotIn("NUESTRA PROPUESTA DE VALOR", response)
+
+    def test_value_proposition_uses_the_service_area_named_in_question(self) -> None:
+        documents = {
+            "perfil.docx": "Más que tecnología, diseñamos funcionalidad.",
+            "data.docx": (
+                "Data Analytics y Big Data\n"
+                "NUESTRA PROPUESTA DE VALOR\n"
+                "No queremos ser simplemente otro proveedor de Business Intelligence.\n"
+                "Queremos generar capacidad instalada para evolucionar:\n"
+                "De datos dispersos a datos conectados\n"
+                "De datos conectados a información confiable\n"
+                "De información confiable a inteligencia empresarial\n"
+                "De inteligencia empresarial a decisiones inteligentes\n"
+                "Y de decisiones inteligentes a acciones automatizada.\n"
+                "Brindamos 4 niveles de servicios:"
+            ),
+        }
+
+        response = get_bot_response(
+            "¿Cuál es la propuesta de valor de la línea de Data Analytics?", documents
+        )
+        self.assertIn("NUESTRA PROPUESTA DE VALOR", response)
+        self.assertIn("De datos dispersos a datos conectados", response)
+        self.assertIn("acciones automatizada", response)
+        self.assertNotIn("Más que tecnología", response)
 
 
 if __name__ == "__main__":

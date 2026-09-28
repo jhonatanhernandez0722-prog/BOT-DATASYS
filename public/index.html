@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#075e54">
+  <meta name="description" content="Conversa con el asistente virtual de DataSys Latam Group.">
+  <title>Asistente DataSys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --green-deep: #075e54;
+      --green-dark: #064c44;
+      --green-bright: #25d366;
+      --green-soft: #e4f4e8;
+      --paper: #f7f8f4;
+      --ink: #17231f;
+      --muted: #64716b;
+      --line: #dce5de;
+      --white: #fff;
+      --danger: #a83a32;
+      font-family: "DM Sans", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      background: #f2f5f2;
+    }
+
+    button, textarea { font: inherit; }
+
+    .page {
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 28px 20px;
+      display: grid;
+      place-items: center;
+    }
+
+    .chat {
+      width: min(100%, 860px);
+      height: min(820px, calc(100dvh - 56px));
+      min-height: 540px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid rgba(6, 76, 68, .13);
+      border-radius: 10px;
+      box-shadow: 0 24px 70px rgba(16, 54, 41, .18);
+    }
+
+    .topbar {
+      position: relative;
+      min-height: 82px;
+      padding: 15px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--white);
+      background: var(--green-deep);
+    }
+
+    .identity { display: flex; align-items: center; justify-content: center; min-width: 0; }
+
+    .logo-frame {
+      width: 168px;
+      height: 60px;
+      flex: 0 0 168px;
+      display: grid;
+      place-items: center;
+      padding: 5px;
+      border-radius: 5px;
+      background: var(--white);
+    }
+
+    .brand-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+    .service-status {
+      position: absolute;
+      top: 50%;
+      right: 22px;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      color: #e5f2e9;
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green-bright);
+      box-shadow: 0 0 0 3px rgba(37, 211, 102, .16);
+    }
+
+    .service-status[data-state="offline"] .status-dot { background: #f3b84b; box-shadow: 0 0 0 3px rgba(243, 184, 75, .18); }
+    .service-status[data-state="offline"] { color: #ffe7b6; }
+
+    .conversation {
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f7f9f7;
+    }
+
+    .messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 26px clamp(16px, 5vw, 48px) 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .intro {
+      width: fit-content;
+      max-width: min(560px, 94%);
+      padding: 17px 19px;
+      border: 1px solid #e6ece5;
+      border-radius: 3px 12px 12px 12px;
+      background: var(--white);
+      box-shadow: 0 2px 5px rgba(25, 52, 39, .05);
+      animation: arrive .3s ease-out both;
+    }
+
+    .intro-kicker {
+      margin: 0 0 7px;
+      color: var(--green-deep);
+      font-size: 11px;
+      line-height: 1.3;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .intro p:last-child { margin: 0; color: #304039; font-size: 15px; line-height: 1.55; }
+
+    .message {
+      width: fit-content;
+      max-width: min(620px, 88%);
+      padding: 12px 15px;
+      border: 1px solid #e2e8e1;
+      border-radius: 3px 12px 12px 12px;
+      background: var(--white);
+      box-shadow: 0 2px 5px rgba(25, 52, 39, .045);
+      font-size: 15px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      animation: arrive .2s ease-out both;
+    }
+
+    .message-user {
+      align-self: flex-end;
+      border-color: #c9e8d0;
+      border-radius: 12px 3px 12px 12px;
+      background: #dcf5e2;
+    }
+
+    .message-error { color: var(--danger); background: #fff7f5; border-color: #f0d3ce; }
+
+    .typing { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; }
+    .typing span { width: 6px; height: 6px; border-radius: 50%; background: #73847a; animation: pulse 1s ease-in-out infinite; }
+    .typing span:nth-child(2) { animation-delay: .12s; }
+    .typing span:nth-child(3) { animation-delay: .24s; }
+
+    .composer-area {
+      padding: 15px clamp(14px, 4vw, 32px) max(16px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      background: #fbfcfa;
+    }
+
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 1px 1px 13px;
+      scrollbar-width: thin;
+    }
+
+    .suggestion {
+      min-height: 38px;
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border: 1px solid #c8ded0;
+      border-radius: 5px;
+      color: var(--green-dark);
+      background: var(--white);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+
+    .suggestion:hover { border-color: var(--green-deep); background: #eff8f1; transform: translateY(-1px); }
+
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 7px 7px 7px 15px;
+      border: 1px solid #cbd7ce;
+      border-radius: 7px;
+      background: var(--white);
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .input-row:focus-within { border-color: var(--green-deep); box-shadow: 0 0 0 3px rgba(7, 94, 84, .11); }
+
+    .message-input {
+      width: 100%;
+      min-height: 42px;
+      max-height: 132px;
+      resize: none;
+      padding: 10px 0;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .message-input::placeholder { color: #77837c; opacity: 1; }
+
+    .send-button {
+      min-width: 90px;
+      min-height: 44px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 5px;
+      color: #073e28;
+      background: var(--green-bright);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color .16s ease, transform .16s ease;
+    }
+
+    .send-button:hover:not(:disabled) { background: #51df83; transform: translateY(-1px); }
+    .send-button:disabled { cursor: wait; opacity: .65; }
+
+    .composer-note {
+      min-height: 18px;
+      margin: 9px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    button:focus-visible, textarea:focus-visible { outline: 3px solid #e3a92b; outline-offset: 2px; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 60%, 100% { opacity: .42; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+    @media (max-width: 600px) {
+      .page { padding: 0; }
+      .chat { width: 100%; height: 100vh; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+      .topbar { min-height: 72px; padding: 12px 15px; }
+      .logo-frame { width: 132px; height: 48px; flex-basis: 132px; }
+      .service-status { right: 12px; font-size: 12px; }
+      .messages { padding: 20px 15px 16px; }
+      .message { max-width: 92%; font-size: 15px; }
+      .composer-area { padding-right: 12px; padding-left: 12px; }
+      .send-button { min-width: 76px; padding: 0 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="chat" aria-label="Chat de atención de DataSys">
+      <header class="topbar">
+        <div class="identity">
+          <div class="logo-frame">
+            <img class="brand-logo" src="/documents/Logo.png" alt="DataSys Latam Group">
+          </div>
+        </div>
+        <div class="service-status" id="service-status" data-state="online" role="status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="status-label">Conectando</span>
+        </div>
+      </header>
+
+      <section class="conversation" aria-label="Conversación">
+        <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text">
+          <div class="intro">
+            <p class="intro-kicker">DataSys · Atención</p>
+            <p>Hola. Puedo ayudarte con información sobre nuestros servicios, ubicación, contacto y datos de la empresa.</p>
+          </div>
+        </div>
+        <div class="composer-area">
+          <div class="suggestions" aria-label="Preguntas frecuentes">
+            <button class="suggestion" type="button" data-question="¿Cuál es el teléfono de contacto?">Teléfono</button>
+            <button class="suggestion" type="button" data-question="¿Cuál es el correo electrónico?">Correo</button>
+            <button class="suggestion" type="button" data-question="¿Cuál es el sitio web?">Sitio web</button>
+            <button class="suggestion" type="button" data-question="¿Cuál es la dirección?">Dirección</button>
+          </div>
+          <form id="chat-form">
+            <label class="sr-only" for="message-input">Escribe tu pregunta</label>
+            <div class="input-row">
+              <textarea class="message-input" id="message-input" name="message" rows="1" maxlength="2000" placeholder="Escribe tu pregunta..." required></textarea>
+              <button class="send-button" id="send-button" type="submit">Enviar</button>
+            </div>
+            <p class="composer-note" id="composer-note">Respuestas basadas en la información disponible de DataSys.</p>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#chat-form");
+    const input = document.querySelector("#message-input");
+    const sendButton = document.querySelector("#send-button");
+    const messages = document.querySelector("#messages");
+    const composerNote = document.querySelector("#composer-note");
+    const status = document.querySelector("#service-status");
+    const statusLabel = document.querySelector("#status-label");
+
+    function addMessage(text, type = "bot") {
+      const message = document.createElement("div");
+      message.className = `message message-${type}`;
+      message.textContent = text;
+      messages.append(message);
+      messages.scrollTop = messages.scrollHeight;
+      return message;
+    }
+
+    async function checkService() {
+      try {
+        const response = await fetch("/health", { headers: { Accept: "application/json" } });
+        if (!response.ok) throw new Error("Servicio no disponible");
+        status.dataset.state = "online";
+        statusLabel.textContent = "En línea";
+      } catch {
+        status.dataset.state = "offline";
+        statusLabel.textContent = "Sin conexión";
+      }
+    }
+
+    async function sendMessage(text) {
+      const question = text.trim();
+      if (!question || sendButton.disabled) return;
+
+      addMessage(question, "user");
+      input.value = "";
+      input.style.height = "auto";
+      sendButton.disabled = true;
+      composerNote.textContent = "Buscando una respuesta...";
+      const typing = addMessage("", "bot");
+      typing.setAttribute("aria-label", "El asistente está escribiendo");
+      typing.innerHTML = '<span class="typing" aria-hidden="true"><span></span><span></span><span></span></span>';
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ message: question }),
+        });
+        const result = await response.json();
+        if (!response.ok || typeof result.response !== "string") {
+          throw new Error("No fue posible obtener una respuesta.");
+        }
+        typing.textContent = result.response;
+        typing.removeAttribute("aria-label");
+        status.dataset.state = "online";
+        statusLabel.textContent = "En línea";
+        composerNote.textContent = "Respuestas basadas en la información disponible de DataSys.";
+      } catch {
+        typing.classList.add("message-error");
+        typing.textContent = "No pude conectar con el asistente. Revisa tu conexión e inténtalo de nuevo.";
+        typing.removeAttribute("aria-label");
+        status.dataset.state = "offline";
+        statusLabel.textContent = "Sin conexión";
+        composerNote.textContent = "No se pudo enviar el mensaje. Puedes volver a intentarlo.";
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+        messages.scrollTop = messages.scrollHeight;
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      sendMessage(input.value);
+    });
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 132)}px`;
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    document.querySelectorAll("[data-question]").forEach((button) => {
+      button.addEventListener("click", () => sendMessage(button.dataset.question));
+    });
+
+    checkService();
+  </script>
+</body>
+</html>
