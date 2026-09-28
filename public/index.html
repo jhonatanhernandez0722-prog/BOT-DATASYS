@@ -207,6 +207,9 @@
     .suggestion {
       min-height: 38px;
       flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 8px 12px;
       border: 1px solid #c8ded0;
       border-radius: 5px;
@@ -215,6 +218,7 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
+      text-decoration: none;
       transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
     }
 
@@ -332,10 +336,10 @@
         </div>
         <div class="composer-area">
           <div class="suggestions" aria-label="Preguntas frecuentes">
-            <a class="suggestion" href="https://wa.me/573246249237" target="_blank" rel="noopener noreferrer">Teléfono</a>
-            <button class="suggestion" type="button" data-question="¿Cuál es el correo electrónico?">Correo</button>
-            <button class="suggestion" type="button" data-question="¿Cuál es el sitio web?">Sitio web</button>
-            <button class="suggestion" type="button" data-question="¿Cuál es la dirección?">Dirección</button>
+            <a class="suggestion" data-question="¿Cuál es el teléfono de contacto?" href="https://wa.me/573246249237" target="_blank" rel="noopener noreferrer">Teléfono</a>
+            <a class="suggestion" data-question="¿Cuál es el correo electrónico?" href="mailto:contacto@datasyslatam.com" target="_blank" rel="noopener noreferrer">Correo</a>
+            <a class="suggestion" data-question="¿Cuál es el sitio web?" href="https://www.datasyslatam.com" target="_blank" rel="noopener noreferrer">Sitio web</a>
+            <a class="suggestion" data-question="¿Cuál es la dirección?" href="https://www.google.com/maps/search/?api=1&amp;query=Carrera%2051B%20N%C2%B0%20106%20-%20250%2C%20Barranquilla%2C%20Colombia" target="_blank" rel="noopener noreferrer">Dirección</a>
           </div>
           <form id="chat-form">
             <label class="sr-only" for="message-input">Escribe tu pregunta</label>
