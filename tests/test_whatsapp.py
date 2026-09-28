@@ -3,6 +3,9 @@ import hmac
 import unittest
 from unittest.mock import AsyncMock, Mock, patch
 
+import httpx
+
+from app.main import app
 from app.whatsapp import (
     handle_incoming_messages,
     is_valid_webhook_signature,
@@ -12,6 +15,46 @@ from app.whatsapp import (
 
 
 class WhatsAppWebhookTests(unittest.IsolatedAsyncioTestCase):
+    async def test_verification_route_is_available_at_whatsapp_path(self) -> None:
+        with patch("app.main.WHATSAPP_VERIFY_TOKEN", "verify-secret"):
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                for path in ("/webhook/whatsapp", "/webhook"):
+                    response = await client.get(
+                        path,
+                        params={
+                            "hub.mode": "subscribe",
+                            "hub.verify_token": "verify-secret",
+                            "hub.challenge": "challenge-value",
+                        },
+                    )
+                    with self.subTest(path=path):
+                        self.assertEqual(response.status_code, 200)
+                        self.assertEqual(response.text, "challenge-value")
+
+    async def test_signed_message_event_is_accepted_at_whatsapp_path(self) -> None:
+        payload = b'{"entry":[]}'
+        signature = hmac.new(b"app-secret", payload, hashlib.sha256).hexdigest()
+        with (
+            patch("app.main.WHATSAPP_APP_SECRET", "app-secret"),
+            patch("app.main.WHATSAPP_ACCESS_TOKEN", "access-token"),
+            patch("app.main.WHATSAPP_PHONE_NUMBER_ID", "phone-id"),
+            patch("app.main.handle_incoming_messages", new_callable=AsyncMock) as handle,
+        ):
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/webhook/whatsapp",
+                    content=payload,
+                    headers={"X-Hub-Signature-256": f"sha256={signature}"},
+                )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
+        handle.assert_awaited_once_with({"entry": []}, app.state.documents)
+
     def test_webhook_verification_requires_matching_subscribe_token(self) -> None:
         self.assertTrue(is_valid_webhook_verification("subscribe", "secret", "secret"))
         self.assertFalse(is_valid_webhook_verification("unsubscribe", "secret", "secret"))

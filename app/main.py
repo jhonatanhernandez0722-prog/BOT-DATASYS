@@ -100,6 +100,7 @@ def chat(request: ChatRequest) -> ChatResponse:
     )
 
 
+@app.get("/webhook/whatsapp")
 @app.get("/webhook")
 def verify_whatsapp_webhook(
     mode: str | None = Query(default=None, alias="hub.mode"),
@@ -111,6 +112,7 @@ def verify_whatsapp_webhook(
     return PlainTextResponse(challenge or "")
 
 
+@app.post("/webhook/whatsapp")
 @app.post("/webhook")
 async def receive_whatsapp_webhook(request: Request) -> dict[str, str]:
     if not WHATSAPP_APP_SECRET:
