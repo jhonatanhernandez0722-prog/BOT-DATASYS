@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel, Field, field_validator
 from starlette.responses import FileResponse, PlainTextResponse
 
-from app.bot import get_bot_response
+from app.assistant import get_assistant_response
 from app.config import (
     DOCUMENTS_DIRECTORY,
     DOCUMENT_PREVIEW_LENGTH,
@@ -39,6 +39,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+    provider: str
 
 
 class DocumentPreview(BaseModel):
@@ -107,10 +108,11 @@ def reload_documents() -> DocumentReloadResponse:
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest) -> ChatResponse:
-    return ChatResponse(
-        response=get_bot_response(request.message, app.state.documents)
+async def chat(request: ChatRequest) -> ChatResponse:
+    answer, provider = await get_assistant_response(
+        request.message, app.state.documents
     )
+    return ChatResponse(response=answer, provider=provider)
 
 
 @app.get("/webhook/whatsapp")

@@ -3,308 +3,478 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#075e54">
-  <meta name="description" content="Conversa con el asistente virtual de DataSys Latam Group.">
+  <meta name="theme-color" content="#050d22">
+  <meta name="description" content="Conversa con el asistente virtual de DataSys Latam Group: software, datos e inteligencia artificial para tu empresa.">
+  <meta property="og:title" content="Asistente DataSys Latam Group">
+  <meta property="og:description" content="Software, datos e inteligencia artificial para tomar mejores decisiones. Pregúntale a nuestro asistente.">
+  <meta property="og:image" content="/documents/Logo.png">
   <title>Asistente DataSys</title>
+  <link rel="icon" href="/documents/Logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      color-scheme: light;
-      --green-deep: #075e54;
-      --green-dark: #064c44;
-      --green-bright: #25d366;
-      --green-soft: #e4f4e8;
-      --paper: #f7f8f4;
-      --ink: #17231f;
-      --muted: #64716b;
-      --line: #dce5de;
-      --white: #fff;
-      --danger: #a83a32;
-      font-family: "DM Sans", "Trebuchet MS", sans-serif;
-      color: var(--ink);
-      background: var(--paper);
+      color-scheme: dark;
+      --night: #050d22;
+      --night-2: #0a1936;
+      --blue: #0b4fa8;
+      --blue-bright: #2f7bf0;
+      --blue-soft: #e8f0fd;
+      --orange: #f7811e;
+      --orange-bright: #ff9a3d;
+      --orange-ink: #b35300;
+      --ink: #0f1b33;
+      --muted: #5a6780;
+      --line: #dfe5f0;
+      --surface: #ffffff;
+      --surface-2: #f4f7fc;
+      --on-dark: #eef3ff;
+      --on-dark-muted: #a9b7d4;
+      --danger: #b3261e;
+      --radius: 22px;
+      --display: "Sora", "Segoe UI", sans-serif;
+      font-family: "Manrope", "Segoe UI", sans-serif;
       font-synthesis: none;
       text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
 
     * { box-sizing: border-box; }
 
+    html, body { height: 100%; }
+
     body {
       min-width: 320px;
-      min-height: 100vh;
-      min-height: 100dvh;
       margin: 0;
-      background: #f2f5f2;
+      color: var(--on-dark);
+      background: var(--night);
+      overflow-x: hidden;
     }
 
-    button, textarea { font: inherit; }
+    button, textarea, a { font: inherit; }
 
+    /* ---------- Fondo animado ---------- */
+    .backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .backdrop::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(120, 160, 255, .07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 160, 255, .07) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 70% at 30% 40%, #000 30%, transparent 75%);
+    }
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55; animation: drift 18s ease-in-out infinite alternate; }
+    .orb-blue { width: 620px; height: 620px; top: -180px; left: -140px; background: radial-gradient(circle, #1f63d6 0%, transparent 65%); }
+    .orb-orange { width: 520px; height: 520px; bottom: -200px; right: 8%; background: radial-gradient(circle, #f7811e 0%, transparent 65%); opacity: .38; animation-delay: -6s; }
+    .orb-cyan { width: 380px; height: 380px; top: 35%; left: 38%; background: radial-gradient(circle, #1bb3e8 0%, transparent 65%); opacity: .22; animation-delay: -11s; }
+
+    /* ---------- Layout ---------- */
     .page {
+      position: relative;
+      z-index: 1;
       min-height: 100vh;
       min-height: 100dvh;
-      padding: 28px 20px;
+      width: min(100%, 1280px);
+      margin: 0 auto;
+      padding: 40px clamp(20px, 4vw, 56px);
       display: grid;
-      place-items: center;
+      grid-template-columns: minmax(0, 1fr) minmax(380px, 520px);
+      gap: clamp(32px, 5vw, 72px);
+      align-items: center;
+    }
+
+    /* ---------- Presentación de marca ---------- */
+    .hero { animation: rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+
+    .logo-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 18px;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 40px rgba(11, 79, 168, .35);
+    }
+    .logo-pill img { display: block; height: 58px; width: auto; }
+
+    .eyebrow {
+      display: flex;
+      width: fit-content;
+      align-items: center;
+      gap: 10px;
+      margin: 34px 0 18px;
+      padding: 7px 14px 7px 8px;
+      border: 1px solid rgba(247, 129, 30, .45);
+      border-radius: 999px;
+      color: #ffd2aa;
+      background: rgba(247, 129, 30, .1);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+    }
+    .eyebrow b {
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: #2b1400;
+      background: linear-gradient(135deg, var(--orange-bright), var(--orange));
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 13ch;
+      font-family: var(--display);
+      font-size: clamp(38px, 5.2vw, 68px);
+      line-height: 1.04;
+      font-weight: 800;
+      letter-spacing: -.035em;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(100deg, #6fa8ff 0%, #ffffff 45%, var(--orange-bright) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-lead {
+      max-width: 52ch;
+      margin: 22px 0 0;
+      color: var(--on-dark-muted);
+      font-size: clamp(16px, 1.4vw, 18px);
+      line-height: 1.65;
+    }
+
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 620px;
+      margin: 34px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .pillar {
+      padding: 16px;
+      border: 1px solid rgba(140, 175, 255, .16);
+      border-radius: 16px;
+      background: linear-gradient(160deg, rgba(47, 123, 240, .14), rgba(10, 25, 54, .4));
+      backdrop-filter: blur(6px);
+    }
+    .pillar svg { width: 26px; height: 26px; color: var(--orange-bright); }
+    .pillar strong { display: block; margin-top: 10px; font-family: var(--display); font-size: 14.5px; font-weight: 600; }
+    .pillar span { display: block; margin-top: 4px; color: var(--on-dark-muted); font-size: 13px; line-height: 1.45; }
+
+    .channels { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .channel {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 16px;
+      border: 1px solid rgba(140, 175, 255, .22);
+      border-radius: 999px;
+      color: var(--on-dark);
+      background: rgba(255, 255, 255, .04);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+    }
+    .channel svg { width: 18px; height: 18px; color: var(--orange-bright); }
+    .channel:hover { border-color: var(--orange); background: rgba(247, 129, 30, .12); transform: translateY(-2px); }
+
+    /* ---------- Chat ---------- */
+    .chat-wrap { position: relative; animation: rise .8s .1s cubic-bezier(.2, .8, .2, 1) both; }
+    .chat-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      z-index: -1;
+      border-radius: calc(var(--radius) + 2px);
+      background: conic-gradient(from 140deg, var(--blue-bright), var(--orange), #1bb3e8, var(--blue-bright));
+      filter: blur(22px);
+      opacity: .45;
     }
 
     .chat {
-      width: min(100%, 860px);
-      height: min(820px, calc(100dvh - 56px));
-      min-height: 540px;
+      height: min(760px, calc(100dvh - 80px));
+      min-height: 560px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: var(--white);
-      border: 1px solid rgba(6, 76, 68, .13);
-      border-radius: 10px;
-      box-shadow: 0 24px 70px rgba(16, 54, 41, .18);
+      color: var(--ink);
+      background: var(--surface-2);
+      border: 1px solid rgba(255, 255, 255, .6);
+      border-radius: var(--radius);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, .45);
     }
 
-    .topbar {
-      position: relative;
-      min-height: 82px;
-      padding: 15px 22px;
+    .chat-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      color: var(--white);
-      background: var(--green-deep);
+      gap: 13px;
+      padding: 16px 18px;
+      color: #fff;
+      background:
+        radial-gradient(120% 140% at 100% 0%, rgba(247, 129, 30, .45), transparent 55%),
+        linear-gradient(120deg, #0a3f8c, var(--blue) 55%, #1560c9);
     }
 
-    .identity { display: flex; align-items: center; justify-content: flex-start; min-width: 0; }
-
-    .logo-frame {
-      width: 168px;
-      height: 60px;
-      flex: 0 0 168px;
+    .avatar {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      flex: 0 0 46px;
       display: grid;
       place-items: center;
-      padding: 5px;
-      border-radius: 5px;
-      background: var(--white);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
     }
-
-    .brand-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
-
-    .service-status {
+    .avatar img { width: 40px; height: 40px; object-fit: cover; object-position: 2% 50%; border-radius: 10px; }
+    .avatar::after {
+      content: "";
       position: absolute;
-      top: 50%;
-      right: 22px;
-      transform: translateY(-50%);
+      right: -3px;
+      bottom: -3px;
+      width: 13px;
+      height: 13px;
+      border: 2.5px solid #0b4fa8;
+      border-radius: 50%;
+      background: #33d17a;
+    }
+    .chat-header[data-state="offline"] .avatar::after { background: #f3b84b; }
+
+    .header-text { min-width: 0; flex: 1; }
+    .header-text h2 { margin: 0; font-family: var(--display); font-size: 16.5px; font-weight: 700; letter-spacing: -.01em; }
+    .header-text p { margin: 2px 0 0; color: #d5e3ff; font-size: 13px; }
+
+    .ai-chip {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      flex: 0 0 auto;
-      color: #e5f2e9;
-      font-size: 13px;
+      gap: 6px;
+      padding: 6px 11px;
+      border: 1px solid rgba(255, 255, 255, .28);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .12);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      white-space: nowrap;
     }
-
-    .status-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--green-bright);
-      box-shadow: 0 0 0 3px rgba(37, 211, 102, .16);
-    }
-
-    .service-status[data-state="offline"] .status-dot { background: #f3b84b; box-shadow: 0 0 0 3px rgba(243, 184, 75, .18); }
-    .service-status[data-state="offline"] { color: #ffe7b6; }
-
-    .conversation {
-      min-height: 0;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #f7f9f7;
-    }
+    .ai-chip svg { width: 14px; height: 14px; color: #ffc48f; }
 
     .messages {
+      position: relative;
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      padding: 26px clamp(16px, 5vw, 48px) 20px;
+      padding: 22px 18px 12px;
       display: flex;
       flex-direction: column;
       gap: 14px;
       scroll-behavior: smooth;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(11, 79, 168, .07) 1px, transparent 0) 0 0 / 22px 22px,
+        var(--surface-2);
     }
 
-    .intro {
-      width: fit-content;
-      max-width: min(560px, 94%);
-      padding: 17px 19px;
-      border: 1px solid #e6ece5;
-      border-radius: 3px 12px 12px 12px;
-      background: var(--white);
-      box-shadow: 0 2px 5px rgba(25, 52, 39, .05);
-      animation: arrive .3s ease-out both;
+    .welcome {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(15, 27, 51, .06);
+      animation: arrive .4s ease-out both;
     }
+    .welcome h3 { margin: 0; font-family: var(--display); font-size: 19px; line-height: 1.3; letter-spacing: -.01em; }
+    .welcome h3 span { color: var(--orange-ink); }
+    .welcome p { margin: 8px 0 16px; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
 
-    .intro-kicker {
-      margin: 0 0 7px;
-      color: var(--green-deep);
-      font-size: 11px;
+    .topics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .topic {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: var(--surface-2);
+      font-size: 13.5px;
+      font-weight: 600;
       line-height: 1.3;
-      font-weight: 700;
-      text-transform: uppercase;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .18s ease, background-color .18s ease, transform .18s ease, box-shadow .18s ease;
     }
+    .topic svg { width: 20px; height: 20px; flex: 0 0 20px; color: var(--blue); }
+    .topic:hover:not(:disabled) { border-color: var(--blue-bright); background: var(--blue-soft); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(11, 79, 168, .12); }
+    .topic:active:not(:disabled) { transform: translateY(0); }
+    .topic:disabled { cursor: wait; opacity: .6; }
 
-    .intro p:last-child { margin: 0; color: #304039; font-size: 15px; line-height: 1.55; }
+    .row { display: flex; flex-direction: column; gap: 5px; animation: arrive .25s ease-out both; }
+    .row-user { align-items: flex-end; }
+    .row-bot { align-items: flex-start; }
 
     .message {
       width: fit-content;
-      max-width: min(620px, 88%);
+      max-width: 88%;
       padding: 12px 15px;
-      border: 1px solid #e2e8e1;
-      border-radius: 3px 12px 12px 12px;
-      background: var(--white);
-      box-shadow: 0 2px 5px rgba(25, 52, 39, .045);
       font-size: 15px;
       line-height: 1.55;
-      white-space: pre-wrap;
       overflow-wrap: anywhere;
-      animation: arrive .2s ease-out both;
     }
-
+    .message-bot {
+      border: 1px solid var(--line);
+      border-radius: 6px 18px 18px 18px;
+      background: var(--surface);
+      box-shadow: 0 4px 14px rgba(15, 27, 51, .05);
+    }
     .message-user {
-      align-self: flex-end;
-      border-color: #c9e8d0;
-      border-radius: 12px 3px 12px 12px;
-      background: #dcf5e2;
+      color: #fff;
+      border-radius: 18px 6px 18px 18px;
+      background: linear-gradient(135deg, #1560c9, var(--blue));
+      box-shadow: 0 8px 20px rgba(11, 79, 168, .28);
+      white-space: pre-wrap;
     }
+    .message-error { color: var(--danger); background: #fff6f5; border-color: #f2d0cc; }
 
-    .message-error { color: var(--danger); background: #fff7f5; border-color: #f0d3ce; }
+    .meta { display: inline-flex; align-items: center; gap: 6px; padding: 0 4px; color: var(--muted); font-size: 11.5px; font-weight: 600; }
+    .meta-ai { color: var(--blue); }
+    .meta-ai svg { width: 12px; height: 12px; color: var(--orange); }
 
-    .message-content { display: flex; flex-direction: column; gap: 7px; }
+    .message-content { display: flex; flex-direction: column; gap: 8px; }
     .message-content p { margin: 0; }
-    .message-heading { color: var(--green-dark); font-weight: 700; }
-    .message-list { display: grid; gap: 4px; margin: 0; padding-left: 20px; }
-    .message-list li { padding-left: 2px; }
-    .message-list li::marker { color: var(--green-deep); }
+    .message-content strong { color: #0a2f66; font-weight: 700; }
+    .message-heading { margin-top: 2px; color: var(--blue) !important; font-family: var(--display); font-size: 14.5px; font-weight: 700; }
+    .message-list { display: grid; gap: 5px; margin: 0; padding-left: 20px; }
+    .message-list li::marker { color: var(--orange); font-weight: 700; }
+    .message-content a { color: var(--blue); font-weight: 600; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
 
-    .typing { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; }
-    .typing span { width: 6px; height: 6px; border-radius: 50%; background: #73847a; animation: pulse 1s ease-in-out infinite; }
+    .typing { display: inline-flex; align-items: center; gap: 5px; min-height: 22px; }
+    .typing span { width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-bright), var(--orange)); animation: pulse 1s ease-in-out infinite; }
     .typing span:nth-child(2) { animation-delay: .12s; }
     .typing span:nth-child(3) { animation-delay: .24s; }
 
-    .composer-area {
-      padding: 15px clamp(14px, 4vw, 32px) max(16px, env(safe-area-inset-bottom));
+    .composer {
+      padding: 12px 14px max(14px, env(safe-area-inset-bottom));
       border-top: 1px solid var(--line);
-      background: #fbfcfa;
+      background: var(--surface);
     }
 
-    .suggestions {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 1px 1px 13px;
-      scrollbar-width: thin;
-    }
-
-    .suggestion {
-      min-height: 38px;
+    .quick-links { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; scrollbar-width: none; }
+    .quick-links::-webkit-scrollbar { display: none; }
+    .quick-link {
+      min-height: 36px;
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
-      border: 1px solid #c8ded0;
-      border-radius: 5px;
-      color: var(--green-dark);
-      background: var(--white);
+      gap: 7px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      background: var(--surface-2);
       font-size: 13px;
       font-weight: 600;
-      cursor: pointer;
       text-decoration: none;
-      transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+      transition: border-color .18s ease, background-color .18s ease, color .18s ease;
     }
-
-    .suggestion:hover { border-color: var(--green-deep); background: #eff8f1; transform: translateY(-1px); }
+    .quick-link svg { width: 15px; height: 15px; color: var(--orange-ink); }
+    .quick-link:hover { border-color: var(--orange); color: var(--orange-ink); background: #fff4ea; }
 
     .input-row {
       display: flex;
       align-items: flex-end;
-      gap: 10px;
-      padding: 7px 7px 7px 15px;
-      border: 1px solid #cbd7ce;
-      border-radius: 7px;
-      background: var(--white);
-      transition: border-color .16s ease, box-shadow .16s ease;
+      gap: 8px;
+      padding: 6px 6px 6px 16px;
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface-2);
+      transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
     }
-
-    .input-row:focus-within { border-color: var(--green-deep); box-shadow: 0 0 0 3px rgba(7, 94, 84, .11); }
+    .input-row:focus-within { border-color: var(--blue-bright); background: #fff; box-shadow: 0 0 0 4px rgba(47, 123, 240, .14); }
 
     .message-input {
       width: 100%;
-      min-height: 42px;
+      min-height: 44px;
       max-height: 132px;
       resize: none;
-      padding: 10px 0;
+      padding: 11px 0;
       border: 0;
       outline: 0;
       color: var(--ink);
       background: transparent;
       font-size: 16px;
-      line-height: 1.35;
-    }
-
-    .message-input::placeholder { color: #77837c; opacity: 1; }
-
-    .send-button {
-      min-width: 90px;
-      min-height: 44px;
-      padding: 0 15px;
-      border: 0;
-      border-radius: 5px;
-      color: #073e28;
-      background: var(--green-bright);
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background-color .16s ease, transform .16s ease;
-    }
-
-    .send-button:hover:not(:disabled) { background: #51df83; transform: translateY(-1px); }
-    .send-button:disabled { cursor: wait; opacity: .65; }
-
-    .composer-note {
-      min-height: 18px;
-      margin: 9px 2px 0;
-      color: var(--muted);
-      font-size: 12px;
       line-height: 1.4;
     }
+    .message-input::placeholder { color: #6b778f; opacity: 1; }
 
-    button:focus-visible, textarea:focus-visible { outline: 3px solid #e3a92b; outline-offset: 2px; }
+    .send-button {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 46px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--orange-bright), #e86a00);
+      box-shadow: 0 8px 18px rgba(232, 106, 0, .35);
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .send-button svg { width: 20px; height: 20px; }
+    .send-button:hover:not(:disabled) { transform: translateY(-1px) scale(1.03); box-shadow: 0 10px 24px rgba(232, 106, 0, .45); }
+    .send-button:active:not(:disabled) { transform: scale(.97); }
+    .send-button:disabled { cursor: wait; filter: grayscale(.4); opacity: .6; box-shadow: none; }
+
+    .composer-note { min-height: 17px; margin: 8px 4px 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+    .message-input:focus-visible { outline: none; } /* el anillo de .input-row indica el foco */
 
     .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
 
-    @keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse { 0%, 60%, 100% { opacity: .42; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+    @keyframes arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+    @keyframes pulse { 0%, 60%, 100% { opacity: .4; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+    @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(60px, 40px) scale(1.12); } }
 
-    @media (max-width: 600px) {
-      .page { padding: 0; }
-      .chat { width: 100%; height: 100vh; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
-      .topbar { min-height: 72px; padding: 12px 15px; }
-      .logo-frame { width: 132px; height: 48px; flex-basis: 132px; }
-      .service-status { right: 12px; font-size: 12px; }
-      .messages { padding: 20px 15px 16px; }
-      .message { max-width: 92%; font-size: 15px; }
-      .composer-area { padding-right: 12px; padding-left: 12px; }
-      .send-button { min-width: 76px; padding: 0 11px; }
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1020px) {
+      .page { grid-template-columns: 1fr; padding-top: 32px; padding-bottom: 32px; }
+      .hero { text-align: center; }
+      .hero h1 { max-width: 16ch; margin: 0 auto; }
+      .eyebrow { margin-left: auto; margin-right: auto; }
+      .hero-lead { margin-left: auto; margin-right: auto; }
+      .pillars { margin-left: auto; margin-right: auto; }
+      .channels { justify-content: center; }
+      .chat-wrap { width: min(100%, 620px); margin: 0 auto; }
+    }
+
+    @media (max-width: 640px) {
+      .page { display: block; padding: 0; }
+      .hero, .chat-wrap::before, .backdrop { display: none; }
+      .chat-wrap { width: 100%; }
+      .chat { height: 100vh; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+      .chat-header { padding: max(12px, env(safe-area-inset-top)) 14px 12px; }
+      .messages { padding: 18px 12px 10px; }
+      .message { max-width: 92%; }
+      .topic { font-size: 13px; }
+    }
+
+    @media (max-width: 359px) {
+      .topics { grid-template-columns: 1fr; }
+      .composer { padding-left: 10px; padding-right: 10px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -313,45 +483,126 @@
   </style>
 </head>
 <body>
-  <main class="page">
-    <section class="chat" aria-label="Chat de atención de DataSys">
-      <header class="topbar">
-        <div class="identity">
-          <div class="logo-frame">
-            <img class="brand-logo" src="/documents/Logo.png" alt="DataSys Latam Group">
-          </div>
-        </div>
-        <div class="service-status" id="service-status" data-state="online" role="status">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span id="status-label">Conectando</span>
-        </div>
-      </header>
+  <div class="backdrop" aria-hidden="true">
+    <span class="orb orb-blue"></span>
+    <span class="orb orb-orange"></span>
+    <span class="orb orb-cyan"></span>
+  </div>
 
-      <section class="conversation" aria-label="Conversación">
+  <main class="page">
+    <section class="hero" aria-labelledby="hero-title">
+      <a class="logo-pill" href="https://datasyslatam.com/" target="_blank" rel="noopener noreferrer">
+        <img src="/documents/Logo.png" alt="DataSys Latam Group">
+      </a>
+      <p class="eyebrow"><b>IA</b> Atención inteligente para tu empresa</p>
+      <h1 id="hero-title">Transformamos retos en <span class="accent">soluciones digitales.</span></h1>
+      <p class="hero-lead">Integramos software, datos e inteligencia artificial para optimizar procesos y ayudar a las empresas a tomar mejores decisiones. Pregúntale a nuestro asistente qué podemos hacer por tu organización.</p>
+
+      <ul class="pillars">
+        <li class="pillar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          <strong>Data Analytics</strong>
+          <span>Dashboards, Power BI y KPIs</span>
+        </li>
+        <li class="pillar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>
+          <strong>Software a medida</strong>
+          <span>Web, móvil e integraciones</span>
+        </li>
+        <li class="pillar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6.3 6.3l2.1 2.1M15.6 15.6l2.1 2.1M6.3 17.7l2.1-2.1M15.6 8.4l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>
+          <strong>IA y agentes</strong>
+          <span>Automatización inteligente</span>
+        </li>
+      </ul>
+
+      <nav class="channels" aria-label="Canales de contacto">
+        <a class="channel" href="https://wa.me/573246249237" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4A8.5 8.5 0 1 1 8 19.6z"/><path d="M9 9.5c.3 2 2.3 4.2 4.5 4.8l1.3-1.2 2 1-.4 1.5c-3.8.4-7.8-3.3-7.9-7.3l1.5-.5 1 2z"/></svg>
+          WhatsApp
+        </a>
+        <a class="channel" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=contacto%40datasyslatam.com" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          contacto@datasyslatam.com
+        </a>
+        <a class="channel" href="https://datasyslatam.com/" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.5 5.7 3.5 9s-1 6.3-3.5 9c-2.5-2.7-3.5-5.7-3.5-9s1-6.3 3.5-9z"/></svg>
+          datasyslatam.com
+        </a>
+      </nav>
+    </section>
+
+    <div class="chat-wrap">
+      <section class="chat" aria-label="Chat con el asistente de DataSys">
+        <header class="chat-header" id="chat-header" data-state="online">
+          <div class="avatar"><img src="/documents/Logo.png" alt=""></div>
+          <div class="header-text">
+            <h2>Asistente DataSys</h2>
+            <p id="status-label" role="status">Conectando…</p>
+          </div>
+          <span class="ai-chip">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg>
+            Con IA
+          </span>
+        </header>
+
         <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions text">
-          <div class="intro">
-            <p class="intro-kicker">DataSys · Atención</p>
-            <p>Hola. Puedo ayudarte con información sobre nuestros servicios, ubicación, contacto y datos de la empresa.</p>
+          <div class="welcome">
+            <h3>Hola, soy el asistente de <span>DataSys</span>.</h3>
+            <p>Resuelvo tus dudas sobre nuestros servicios, soluciones y contacto. Elige un tema o escribe tu pregunta.</p>
+            <div class="topics">
+              <button class="topic" type="button" data-question="¿Qué servicios ofrece DataSys?">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                Servicios
+              </button>
+              <button class="topic" type="button" data-question="¿Qué ofrecen en análisis de datos y Power BI?">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+                Datos y Power BI
+              </button>
+              <button class="topic" type="button" data-question="¿Desarrollan software a medida?">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>
+                Software a medida
+              </button>
+              <button class="topic" type="button" data-question="¿Cómo pueden ayudar a mi empresa con inteligencia artificial?">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg>
+                Inteligencia artificial
+              </button>
+            </div>
           </div>
         </div>
-        <div class="composer-area">
-          <div class="suggestions" aria-label="Preguntas frecuentes">
-            <a class="suggestion" data-question="¿Cuál es el teléfono de contacto?" href="https://wa.me/573246249237" target="_blank" rel="noopener noreferrer">Teléfono</a>
-            <a class="suggestion" data-question="¿Cuál es el correo electrónico?" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=contacto%40datasyslatam.com" target="_blank" rel="noopener noreferrer">Correo</a>
-            <a class="suggestion" data-question="¿Cuál es el sitio web?" href="https://datasyslatam.com/" target="_blank" rel="noopener noreferrer">Sitio web</a>
-            <a class="suggestion" data-question="¿Cuál es la dirección?" href="https://www.google.com/maps/search/?api=1&amp;query=Carrera%2051B%20N%C2%B0%20106%20-%20250%2C%20Barranquilla%2C%20Colombia" target="_blank" rel="noopener noreferrer">Dirección</a>
+
+        <div class="composer">
+          <div class="quick-links" aria-label="Datos de contacto">
+            <a class="quick-link" data-question="¿Cuál es el teléfono de contacto?" href="https://wa.me/573246249237" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+              Teléfono
+            </a>
+            <a class="quick-link" data-question="¿Cuál es el correo electrónico?" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=contacto%40datasyslatam.com" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+              Correo
+            </a>
+            <a class="quick-link" data-question="¿Cuál es el sitio web?" href="https://datasyslatam.com/" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.5 5.7 3.5 9s-1 6.3-3.5 9c-2.5-2.7-3.5-5.7-3.5-9s1-6.3 3.5-9z"/></svg>
+              Sitio web
+            </a>
+            <a class="quick-link" data-question="¿Cuál es la dirección?" href="https://www.google.com/maps/search/?api=1&amp;query=Carrera%2051B%20N%C2%B0%20106%20-%20250%2C%20Barranquilla%2C%20Colombia" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+              Dirección
+            </a>
           </div>
           <form id="chat-form">
             <label class="sr-only" for="message-input">Escribe tu pregunta</label>
             <div class="input-row">
-              <textarea class="message-input" id="message-input" name="message" rows="1" maxlength="2000" placeholder="Escribe tu pregunta..." required></textarea>
-              <button class="send-button" id="send-button" type="submit">Enviar</button>
+              <textarea class="message-input" id="message-input" name="message" rows="1" maxlength="2000" placeholder="Escribe tu pregunta sobre DataSys…" required></textarea>
+              <button class="send-button" id="send-button" type="submit" aria-label="Enviar mensaje">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+              </button>
             </div>
-            <p class="composer-note" id="composer-note">Respuestas basadas en la información disponible de DataSys.</p>
+            <p class="composer-note" id="composer-note">Respuestas generadas con IA a partir de la información oficial de DataSys.</p>
           </form>
         </div>
       </section>
-    </section>
+    </div>
   </main>
 
   <script>
@@ -360,26 +611,57 @@
     const sendButton = document.querySelector("#send-button");
     const messages = document.querySelector("#messages");
     const composerNote = document.querySelector("#composer-note");
-    const status = document.querySelector("#service-status");
+    const header = document.querySelector("#chat-header");
     const statusLabel = document.querySelector("#status-label");
+    const DEFAULT_NOTE = composerNote.textContent;
+    const AI_PROVIDERS = new Set(["openai", "gemini"]);
+    const SPARK_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg>';
 
-    function addMessage(text, type = "bot") {
+    function setStatus(online) {
+      header.dataset.state = online ? "online" : "offline";
+      statusLabel.textContent = online ? "En línea · responde al instante" : "Sin conexión";
+    }
+
+    function addRow(type) {
+      const row = document.createElement("div");
+      row.className = `row row-${type}`;
       const message = document.createElement("div");
       message.className = `message message-${type}`;
-      if (type === "bot" && text) {
-        renderBotMessage(message, text);
-      } else {
-        message.textContent = text;
-      }
-      messages.append(message);
+      row.append(message);
+      messages.append(row);
       messages.scrollTop = messages.scrollHeight;
-      return message;
+      return { row, message };
+    }
+
+    // Convierte **negritas**, URLs y correos en nodos seguros (sin innerHTML).
+    function appendInline(parent, text) {
+      const pattern = /\*\*(.+?)\*\*|(https?:\/\/[^\s)]+)|([\w.+-]+@[\w-]+\.[\w.]+)/g;
+      let last = 0;
+      for (const match of text.matchAll(pattern)) {
+        if (match.index > last) parent.append(text.slice(last, match.index));
+        if (match[1]) {
+          const strong = document.createElement("strong");
+          strong.textContent = match[1];
+          parent.append(strong);
+        } else {
+          const link = document.createElement("a");
+          const value = match[2] || match[3];
+          link.href = match[2] ? value : `mailto:${value}`;
+          link.textContent = value;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          parent.append(link);
+        }
+        last = match.index + match[0].length;
+      }
+      if (last < text.length) parent.append(text.slice(last));
     }
 
     function renderBotMessage(container, text) {
       const content = document.createElement("div");
       content.className = "message-content";
       let list = null;
+      let listType = null;
 
       for (const line of text.split("\n")) {
         const value = line.trim();
@@ -388,38 +670,55 @@
           continue;
         }
 
-        if (value.startsWith("- ")) {
-          if (!list) {
-            list = document.createElement("ul");
+        const bullet = value.match(/^[-*•]\s+(.*)$/);
+        const numbered = value.match(/^\d+[.)]\s+(.*)$/);
+        if (bullet || numbered) {
+          const type = numbered ? "ol" : "ul";
+          if (!list || listType !== type) {
+            list = document.createElement(type);
             list.className = "message-list";
+            listType = type;
             content.append(list);
           }
+          if (numbered && list.children.length === 0) list.start = parseInt(value, 10);
           const item = document.createElement("li");
-          item.textContent = value.slice(2);
+          appendInline(item, (bullet || numbered)[1]);
           list.append(item);
           continue;
         }
 
         list = null;
-        const isHeading = /^(DATA ANALYTICS Y BIG DATA|NUESTROS SERVICIOS DE DESARROLLO|DATA \d{2}|DEV \d{2})/i.test(value);
+        const markdownHeading = value.match(/^#{1,6}\s+(.*)$/);
+        const isHeading = markdownHeading || /^(DATA ANALYTICS Y BIG DATA|NUESTROS SERVICIOS DE DESARROLLO|DATA \d{2}|DEV \d{2})/i.test(value);
         const paragraph = document.createElement(isHeading ? "strong" : "p");
         if (isHeading) paragraph.className = "message-heading";
-        paragraph.textContent = value;
+        appendInline(paragraph, markdownHeading ? markdownHeading[1].replace(/\*\*/g, "") : value);
         content.append(paragraph);
       }
 
       container.replaceChildren(content);
     }
 
+    function addMeta(row, provider) {
+      const meta = document.createElement("span");
+      const usedAi = AI_PROVIDERS.has(provider);
+      meta.className = usedAi ? "meta meta-ai" : "meta";
+      meta.innerHTML = usedAi ? `${SPARK_ICON} Respuesta con IA` : "Respuesta automática";
+      meta.title = `Proveedor: ${provider}`;
+      row.append(meta);
+    }
+
+    function setBusy(busy) {
+      sendButton.disabled = busy;
+      document.querySelectorAll(".topic").forEach((button) => { button.disabled = busy; });
+    }
+
     async function checkService() {
       try {
         const response = await fetch("/health", { headers: { Accept: "application/json" } });
-        if (!response.ok) throw new Error("Servicio no disponible");
-        status.dataset.state = "online";
-        statusLabel.textContent = "En línea";
+        setStatus(response.ok);
       } catch {
-        status.dataset.state = "offline";
-        statusLabel.textContent = "Sin conexión";
+        setStatus(false);
       }
     }
 
@@ -427,14 +726,14 @@
       const question = text.trim();
       if (!question || sendButton.disabled) return;
 
-      addMessage(question, "user");
+      addRow("user").message.textContent = question;
       input.value = "";
       input.style.height = "auto";
-      sendButton.disabled = true;
-      composerNote.textContent = "Buscando una respuesta...";
-      const typing = addMessage("", "bot");
-      typing.setAttribute("aria-label", "El asistente está escribiendo");
-      typing.innerHTML = '<span class="typing" aria-hidden="true"><span></span><span></span><span></span></span>';
+      setBusy(true);
+      composerNote.textContent = "El asistente está redactando una respuesta…";
+      const { row, message } = addRow("bot");
+      message.setAttribute("aria-label", "El asistente está escribiendo");
+      message.innerHTML = '<span class="typing" aria-hidden="true"><span></span><span></span><span></span></span>';
 
       try {
         const response = await fetch("/chat", {
@@ -446,22 +745,22 @@
         if (!response.ok || typeof result.response !== "string") {
           throw new Error("No fue posible obtener una respuesta.");
         }
-        renderBotMessage(typing, result.response);
-        typing.removeAttribute("aria-label");
-        status.dataset.state = "online";
-        statusLabel.textContent = "En línea";
-        composerNote.textContent = "Respuestas basadas en la información disponible de DataSys.";
+        renderBotMessage(message, result.response);
+        message.removeAttribute("aria-label");
+        if (result.provider) addMeta(row, result.provider);
+        // Mostrar el inicio de la respuesta, no su final, cuando es larga.
+        messages.scrollTop = Math.max(0, row.offsetTop - 12);
+        setStatus(true);
+        composerNote.textContent = DEFAULT_NOTE;
       } catch {
-        typing.classList.add("message-error");
-        typing.textContent = "No pude conectar con el asistente. Revisa tu conexión e inténtalo de nuevo.";
-        typing.removeAttribute("aria-label");
-        status.dataset.state = "offline";
-        statusLabel.textContent = "Sin conexión";
+        message.classList.add("message-error");
+        message.textContent = "No pude conectar con el asistente. Revisa tu conexión e inténtalo de nuevo.";
+        message.removeAttribute("aria-label");
+        setStatus(false);
         composerNote.textContent = "No se pudo enviar el mensaje. Puedes volver a intentarlo.";
       } finally {
-        sendButton.disabled = false;
-        input.focus();
-        messages.scrollTop = messages.scrollHeight;
+        setBusy(false);
+        input.focus({ preventScroll: true });
       }
     }
 
@@ -482,8 +781,8 @@
       }
     });
 
-    document.querySelectorAll("[data-question]").forEach((button) => {
-      button.addEventListener("click", () => sendMessage(button.dataset.question));
+    document.querySelectorAll("[data-question]").forEach((element) => {
+      element.addEventListener("click", () => sendMessage(element.dataset.question));
     });
 
     checkService();

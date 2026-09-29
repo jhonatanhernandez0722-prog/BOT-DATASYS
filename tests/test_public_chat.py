@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import AsyncMock, patch
 
 import httpx
 
@@ -28,7 +29,7 @@ class PublicChatPageTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('data-question="¿Cuál es la dirección?"', response.text)
         self.assertIn('rel="noopener noreferrer"', response.text)
         self.assertNotIn('data-question="¿Cuál es el horario?', response.text)
-        self.assertEqual(response.text.count('class="suggestion"'), 4)
+        self.assertEqual(response.text.count('class="quick-link"'), 4)
 
     async def test_chat_api_and_meta_webhook_routes_remain_available(self) -> None:
         paths = {
@@ -42,13 +43,42 @@ class PublicChatPageTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn(("/webhook", "GET"), paths)
         self.assertIn(("/webhook", "POST"), paths)
 
-        async with httpx.AsyncClient(
-            transport=httpx.ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post("/chat", json={"message": "¿Cuál es el NIT?"})
+        with patch(
+            "app.main.get_assistant_response",
+            new_callable=AsyncMock,
+            return_value=("Respuesta generada por IA.", "openai"),
+        ) as assistant:
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/chat", json={"message": "¿Cuál es el NIT?"}
+                )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["response"])
+        self.assertEqual(response.json()["response"], "Respuesta generada por IA.")
+        self.assertEqual(response.json()["provider"], "openai")
+        assistant.assert_awaited_once()
+
+    async def test_chat_serializes_the_real_assistant_result(self) -> None:
+        """Sin mockear el asistente: detecta desajustes de contrato en /chat.
+
+        El asistente devuelve (texto, proveedor); si una capa intermedia olvida
+        desempaquetar la tupla, FastAPI falla al serializar y este test lo ve.
+        """
+        with patch("app.ai.OPENAI_API_KEY", ""), patch("app.ai.GEMINI_API_KEY", ""):
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/chat", json={"message": "¿Cuál es el teléfono de contacto?"}
+                )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertIsInstance(payload["response"], str)
+        self.assertTrue(payload["response"].strip())
+        self.assertEqual(payload["provider"], "local")
 
     async def test_company_logo_is_served_as_png(self) -> None:
         async with httpx.AsyncClient(

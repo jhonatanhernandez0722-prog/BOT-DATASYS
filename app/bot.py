@@ -572,12 +572,15 @@ def _find_closest_fragment(
     return best_fragment
 
 
-def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -> str:
+def get_preloaded_response(
+    message: str,
+    documents: Mapping[str, str] | None = None,
+) -> str | None:
     if _is_greeting(message):
         return GREETING_RESPONSE
 
     if not documents:
-        return DOCUMENTS_UNAVAILABLE_RESPONSE
+        return None
 
     intent = _find_intent(message)
 
@@ -626,4 +629,73 @@ def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -
     if section is not None:
         return section
 
-    return _find_closest_fragment(documents, message, intent) or DOCUMENTS_UNAVAILABLE_RESPONSE
+    fragment = _find_closest_fragment(documents, message, intent)
+    if fragment is None:
+        return None
+
+    fragment_tokens = _normalize_tokens(fragment)
+    query_matches = len(fragment_tokens & _normalize_tokens(message))
+    has_specific_intent = intent not in {None, "servicios", "quienes_somos"}
+    if query_matches >= 2 or (query_matches >= 1 and has_specific_intent):
+        return fragment
+    return None
+
+
+def get_relevant_context(
+    message: str,
+    documents: Mapping[str, str],
+) -> dict[str, str]:
+    max_fragments = 5
+    max_context_length = 3000
+    intent = _find_intent(message)
+    query_tokens = _normalize_tokens(message)
+    intent_terms = _normalize_tokens(
+        " ".join(INTENT_SEARCH_TERMS.get(intent, [])) if intent else ""
+    )
+    ranked_fragments = []
+
+    for name, content in documents.items():
+        for fragment in _iter_fragments(content):
+            fragment_tokens = _normalize_tokens(fragment)
+            query_matches = len(fragment_tokens & query_tokens)
+            score = _score_fragment(fragment, query_tokens, intent_terms)
+            if score:
+                ranked_fragments.append(
+                    (-score, -query_matches, name.casefold(), fragment)
+                )
+
+    ranked_fragments.sort()
+    sections = []
+    seen_fragments = set()
+    preloaded_response = get_preloaded_response(message, documents)
+    if preloaded_response and not _is_greeting(message):
+        sections.append(f"Coincidencia precargada:\n{preloaded_response}")
+        seen_fragments.add(_normalize_text(preloaded_response))
+
+    retrieved_count = 0
+    for _, _, name, fragment in ranked_fragments:
+        normalized_fragment = _normalize_text(fragment)
+        if normalized_fragment in seen_fragments:
+            continue
+        sections.append(f"[{name}] {fragment}")
+        seen_fragments.add(normalized_fragment)
+        retrieved_count += 1
+        if retrieved_count >= max_fragments:
+            break
+
+    context = "\n\n".join(sections)
+    if len(context) > max_context_length:
+        context = context[:max_context_length].rsplit(" ", 1)[0]
+    return {"conocimiento_relevante.txt": context} if context else {}
+
+
+def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -> str:
+    response = get_preloaded_response(message, documents)
+    if response is not None:
+        return response
+
+    if not documents:
+        return DOCUMENTS_UNAVAILABLE_RESPONSE
+    return _find_closest_fragment(documents, message, _find_intent(message)) or (
+        DOCUMENTS_UNAVAILABLE_RESPONSE
+    )

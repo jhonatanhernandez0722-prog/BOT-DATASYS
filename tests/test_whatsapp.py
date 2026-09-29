@@ -88,9 +88,22 @@ class WhatsAppWebhookTests(unittest.IsolatedAsyncioTestCase):
             "empresa.docx": "Nuestro horario de atención es de lunes a viernes de 8:00 AM a 5:00 PM."
         }
 
-        with patch("app.whatsapp.send_whatsapp_message", new_callable=AsyncMock) as send:
+        with (
+            patch(
+                "app.whatsapp.get_assistant_response",
+                new_callable=AsyncMock,
+                return_value=(
+                    "Nuestro horario de atención es de lunes a viernes de 8:00 AM a 5:00 PM.",
+                    "openai",
+                ),
+            ) as assistant,
+            patch("app.whatsapp.send_whatsapp_message", new_callable=AsyncMock) as send,
+        ):
             await handle_incoming_messages(event, documents)
 
+        assistant.assert_awaited_once_with(
+            "¿Cuál es el horario?", documents
+        )
         send.assert_awaited_once_with(
             "573001112233",
             "Nuestro horario de atención es de lunes a viernes de 8:00 AM a 5:00 PM.",

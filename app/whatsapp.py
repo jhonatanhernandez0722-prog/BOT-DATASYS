@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 import httpx
 
-from app.bot import get_bot_response
+from app.assistant import get_assistant_response
 from app.config import (
     WHATSAPP_ACCESS_TOKEN,
     WHATSAPP_API_VERSION,
@@ -94,5 +94,5 @@ async def handle_incoming_messages(
                 if not isinstance(body, str) or not body.strip():
                     continue
 
-                reply = get_bot_response(body, documents)
+                reply, _provider = await get_assistant_response(body, documents)
                 await send_whatsapp_message(sender, reply)

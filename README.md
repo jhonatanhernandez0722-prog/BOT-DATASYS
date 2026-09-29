@@ -1,6 +1,6 @@
 # Chatbot empresarial para WhatsApp
 
-Backend en Python y FastAPI para responder preguntas a partir de documentos de la empresa. Incluye integración con WhatsApp Cloud API; no utiliza inteligencia artificial.
+Backend en Python y FastAPI que usa IA para redactar todas las respuestas con apoyo de información precargada y documentos de la empresa. Usa OpenAI como modelo principal y Gemini como respaldo. Incluye integración con WhatsApp Cloud API.
 
 ## Requisitos
 
@@ -33,7 +33,7 @@ Instala las dependencias:
 python -m pip install -r requirements.txt
 ```
 
-Configura `COMPANY_NAME` en `.env`. Las respuestas de ejemplo y los textos entre corchetes se pueden editar en `app/responses.py`.
+Configura las variables de entorno en `.env`: `AI_PRIMARY_PROVIDER=openai`, `OPENAI_API_KEY` y `OPENAI_MODEL` para el modelo principal; `AI_FALLBACK_PROVIDER=gemini`, `GEMINI_API_KEY` y `GEMINI_MODEL` para el respaldo. La clave de Gemini también se puede leer temporalmente desde `AI_FREE_MODEL` por compatibilidad con la configuración anterior. No publiques claves y revócalas si fueron compartidas. Las respuestas precargadas se editan en `app/responses.py` y el conocimiento del modelo procede de `public/documents/`.
 
 ## Conectar WhatsApp Cloud API
 
@@ -54,7 +54,7 @@ Coloca los archivos Word `.docx` o fichas de texto UTF-8 `.txt` en `public/docum
 
 El backend conserva el texto completo de cada documento en memoria. Los endpoints muestran como máximo los primeros 1000 caracteres por documento e indican `"truncated": true` cuando se ha limitado el contenido.
 
-El bot busca dentro del texto cargado y devuelve únicamente la oración o fragmento mejor relacionado con la intención detectada, con un máximo de 500 caracteres. La búsqueda normaliza mayúsculas, tildes y puntuación, contempla variantes habituales de palabras y puntúa coincidencias de la pregunta y de la intención. Solo responde si la puntuación supera el umbral configurado; no genera información ni devuelve documentos completos. Si se agregan, reemplazan o quitan documentos mientras el servidor está activo, usa `POST /documents/reload` para actualizar la información cargada.
+La IA redacta todas las respuestas, incluidos saludos y preguntas que coinciden con información precargada. Antes de llamarla, el bot busca en sus respuestas y documentos y le envía únicamente la coincidencia y hasta cinco fragmentos pertinentes, con un máximo de 3000 caracteres. OpenAI es el proveedor principal y Gemini el respaldo; cada llamada limita también la salida a 400 tokens. Si ambos proveedores fallan, se usa la respuesta local aproximada como último recurso. El modelo recibe instrucciones de basarse en los documentos y no inventar datos. Si se agregan, reemplazan o quitan documentos mientras el servidor está activo, usa `POST /documents/reload` para actualizar la información cargada.
 
 ## Ejecutar FastAPI
 
