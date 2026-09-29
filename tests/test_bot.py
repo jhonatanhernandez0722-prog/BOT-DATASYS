@@ -226,6 +226,103 @@ class BotDocumentSearchTests(unittest.TestCase):
 
 
 class KnowledgeBaseIntentTests(unittest.TestCase):
+    def test_company_overview_accepts_ambiguous_wording(self) -> None:
+        documents = {
+            "perfil.docx": (
+                "DataSys Latam Group S.A.S.\n"
+                "Es un startup tecnológico que integra software, inteligencia artificial y datos."
+            ),
+            "data.docx": (
+                "DATA ANALYTICS Y BIG DATA\n"
+                "Transformamos datos en conocimiento estratégico para tomar decisiones."
+            ),
+        }
+        for question in (
+            "¿A qué se dedica la empresa?",
+            "¿Qué hace la empresa?",
+            "Dame información de DataSys",
+            "Quiero conocer la empresa",
+            "Cuéntame sobre la empresa",
+            "¿A qué se dedican?",
+            "¿A qué se dedica esta empresa?",
+            "¿Qué hace esta empresa?",
+            "¿Cómo me pueden ayudar con mi empresa?",
+            "Cuéntame de DataSys",
+            "Háblame de la empresa",
+        ):
+            with self.subTest(question=question):
+                self.assertIn("startup tecnológico", get_bot_response(question, documents))
+
+        specific = get_bot_response(
+            "¿A qué se dedica la empresa en Data Analytics?", documents
+        )
+        self.assertIn("DATA ANALYTICS Y BIG DATA", specific)
+        self.assertIn("conocimiento estratégico", specific)
+
+        software_documents = {
+            "empresa.docx": "DEV 01 — PRESENCIA DIGITAL (Sitios Web)\nServicios: Sitios web corporativos, E-commerce."
+        }
+        software = get_bot_response("¿Qué hace la empresa en software?", software_documents)
+        self.assertIn("NUESTROS SERVICIOS DE DESARROLLO", software)
+        self.assertIn("DEV 01 — PRESENCIA DIGITAL", software)
+
+    def test_ambiguous_business_needs_route_to_the_closest_known_topic(self) -> None:
+        documents = {
+            "data.docx": (
+                "DATA ANALYTICS Y BIG DATA\n"
+                "Integramos datos dispersos para mejorar decisiones y generar información confiable."
+            ),
+            "operaciones.txt": (
+                "DIGITALIZACIÓN DE OPERACIONES\n"
+                "Automatizamos y centralizamos procesos de negocio para mejorar productividad."
+            ),
+        }
+        cases = (
+            ("Necesito mejorar mis decisiones con datos", "DATA ANALYTICS Y BIG DATA"),
+            ("Me interesa automatizar los procesos de mi negocio", "DIGITALIZACIÓN DE OPERACIONES"),
+            ("Busco centralizar mi información", "DIGITALIZACIÓN DE OPERACIONES"),
+        )
+
+        for question, expected_section in cases:
+            with self.subTest(question=question):
+                self.assertIn(expected_section, get_bot_response(question, documents))
+
+    def test_generic_price_question_does_not_match_business_quote_policy(self) -> None:
+        self.assertEqual(
+            get_bot_response(
+                "¿Cuánto cuesta el almuerzo?",
+                {
+                    "comercial.txt": (
+                        "El valor de servicios y proyectos se define tras un diagnóstico a la medida."
+                    )
+                },
+            ),
+            FALLBACK_RESPONSE,
+        )
+
+    def test_unknown_but_related_question_returns_closest_fragment(self) -> None:
+        documents = {
+            "data.docx": (
+                "Data Analytics y Big Data\n"
+                "Realizamos análisis exploratorio de datos y análisis de correlaciones "
+                "para identificar patrones y relaciones en la información."
+            )
+        }
+        response = get_bot_response(
+            "¿Me pueden contar del análisis exploratorio de datos?", documents
+        )
+        self.assertIn("análisis exploratorio de datos", response)
+        self.assertNotEqual(response, FALLBACK_RESPONSE)
+
+    def test_unrelated_ambiguous_question_still_uses_fallback(self) -> None:
+        self.assertEqual(
+            get_bot_response(
+                "Hola, ¿qué tal?",
+                {"empresa.docx": "DataSys ofrece consultoría y desarrollo de software."},
+            ),
+            FALLBACK_RESPONSE,
+        )
+
     def test_company_name_and_nit(self) -> None:
         documents = {
             "perfil.docx": (

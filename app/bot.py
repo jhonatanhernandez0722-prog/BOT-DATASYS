@@ -118,6 +118,54 @@ def _find_intent(message: str) -> str | None:
         ):
             return "propuesta_valor_software"
 
+    if _matches_keyword(normalized_message, "cuanto cuesta") and any(
+        _matches_keyword(normalized_message, term)
+        for term in (
+            "servicio", "proyecto", "software", "plataforma", "consultoria",
+            "solucion", "sistema", "desarrollo",
+        )
+    ):
+        return "politica_cotizacion"
+
+    company_overview_phrases = (
+        "a que se dedica la empresa",
+        "a que se dedica esta empresa",
+        "a que se dedica",
+        "a que se dedican",
+        "que hace la empresa",
+        "que hace esta empresa",
+        "como me pueden ayudar con mi empresa",
+        "como me pueden ayudar",
+        "que actividades realiza la empresa",
+        "de que trata datasys",
+        "en que consiste datasys",
+        "dame informacion de datasys",
+        "dame informacion de la empresa",
+        "quiero conocer la empresa",
+        "cuentame sobre datasys",
+        "cuentame de datasys",
+        "cuentame sobre la empresa",
+        "hablame de datasys",
+        "hablame de la empresa",
+        "informacion sobre datasys",
+    )
+    if any(
+        _matches_keyword(normalized_message, phrase)
+        for phrase in company_overview_phrases
+    ):
+        specific_matches = []
+        for priority, (candidate_intent, keywords) in enumerate(INTENT_KEYWORDS.items()):
+            if candidate_intent == "quienes_somos":
+                continue
+            for keyword in keywords:
+                if _matches_keyword(normalized_message, keyword):
+                    specific_matches.append(
+                        (len(_normalize_text(keyword)), -priority, candidate_intent)
+                    )
+        if specific_matches:
+            return max(specific_matches)[2]
+        return "quienes_somos"
+
     matches = []
     for priority, (intent, keywords) in enumerate(INTENT_KEYWORDS.items()):
         for keyword in keywords:
@@ -495,8 +543,6 @@ def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -
         return FALLBACK_RESPONSE
 
     intent = _find_intent(message)
-    if intent is None:
-        return FALLBACK_RESPONSE
 
     if intent in {"servicios", "servicios_data"}:
         catalog = _find_service_catalog(
@@ -538,7 +584,9 @@ def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -
         return section
 
     query_tokens = _normalize_tokens(message)
-    intent_terms = _normalize_tokens(" ".join(INTENT_SEARCH_TERMS.get(intent, [])))
+    intent_terms = _normalize_tokens(
+        " ".join(INTENT_SEARCH_TERMS.get(intent, [])) if intent else ""
+    )
     best_fragment = None
     best_score = MINIMUM_RELEVANCE_SCORE - 1
 
