@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_documents(directory: Path = DOCUMENTS_DIRECTORY) -> dict[str, str]:
-    """Load paragraph text from each readable DOCX file in a directory."""
+    """Load readable DOCX files and curated UTF-8 text documents."""
     if not directory.is_dir():
         return {}
 
@@ -21,17 +21,26 @@ def load_documents(directory: Path = DOCUMENTS_DIRECTORY) -> dict[str, str]:
 
     documents: dict[str, str] = {}
     for file_path in files:
-        if not file_path.is_file() or file_path.suffix.casefold() != ".docx":
+        if not file_path.is_file():
             continue
 
         try:
-            word_document = Document(file_path)
-            paragraphs = [
-                paragraph.text.strip()
-                for paragraph in word_document.paragraphs
-                if paragraph.text.strip()
-            ]
-            documents[file_path.name] = "\n".join(paragraphs)
+            suffix = file_path.suffix.casefold()
+            if suffix == ".docx":
+                word_document = Document(file_path)
+                paragraphs = [
+                    paragraph.text.strip()
+                    for paragraph in word_document.paragraphs
+                    if paragraph.text.strip()
+                ]
+                content = "\n".join(paragraphs)
+            elif suffix == ".txt":
+                content = file_path.read_text(encoding="utf-8").strip()
+            else:
+                continue
+
+            if content:
+                documents[file_path.name] = content
         except Exception:
             logger.exception("Could not read document: %s", file_path.name)
 

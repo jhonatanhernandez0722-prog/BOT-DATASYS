@@ -1,0 +1,74 @@
+DATOS CURADOS DEL SITIO OFICIAL
+Fuente: https://datasyslatam.com/
+Revisado: 2026-09-28
+
+SERVICIOS COMPLEMENTARIOS
+- Consultoría tecnológica: analiza el negocio y diseña una estrategia tecnológica adecuada a sus necesidades.
+- Integración de sistemas: conecta sistemas, datos, APIs y servicios existentes.
+- Desarrollo web y móvil: crea aplicaciones escalables, modernas y adaptadas a los procesos de la empresa.
+- Ciberseguridad: protege la información mediante estándares y buenas prácticas.
+- Cloud y DevOps: ofrece infraestructura en la nube, automatización y despliegue continuo.
+- Soporte y mantenimiento: brinda acompañamiento técnico para mantener y evolucionar las soluciones.
+- Digitalización de operaciones: automatiza y centraliza procesos para mejorar su eficiencia.
+- Transformación digital: diseña hojas de ruta y moderniza operaciones con tecnología.
+- Gobernanza TI: alinea la tecnología con los objetivos de la organización y apoya la seguridad y el cumplimiento.
+
+CONSULTORÍA TECNOLÓGICA
+DataSys analiza el negocio y diseña una estrategia tecnológica según las necesidades de la organización.
+El sitio oficial invita a solicitar asesoría para evaluar necesidades y proponer una solución a medida.
+
+INTEGRACIÓN DE SISTEMAS
+DataSys conecta sistemas, datos, APIs y servicios existentes para facilitar la interoperabilidad.
+
+DESARROLLO WEB Y MÓVIL
+DataSys crea aplicaciones web y móviles escalables, modernas, seguras y adaptadas a los procesos de la organización.
+
+CIBERSEGURIDAD
+DataSys ofrece protección de información mediante estándares y buenas prácticas.
+
+CLOUD Y DEVOPS
+DataSys ofrece infraestructura en la nube, automatización y despliegue continuo.
+
+SOPORTE Y MANTENIMIENTO
+DataSys ofrece acompañamiento técnico para la continuidad, mantenimiento y evolución de las soluciones.
+
+DIGITALIZACIÓN DE OPERACIONES
+DataSys automatiza y centraliza operaciones y procesos para ayudar a mejorar la productividad y eficiencia.
+
+TRANSFORMACIÓN DIGITAL
+DataSys diseña hojas de ruta tecnológicas y moderniza operaciones para apoyar la evolución digital de las organizaciones.
+
+GOBERNANZA TI
+DataSys alinea la tecnología con los objetivos organizacionales y ayuda a mejorar la seguridad y el cumplimiento.
+
+INTELIGENCIA ARTIFICIAL Y AGENTES
+DataSys integra inteligencia artificial para automatizar procesos, analizar información y crear nuevas capacidades.
+También desarrolla soluciones tecnológicas y agentes con inteligencia artificial adaptados a necesidades específicas.
+
+SECTORES ATENDIDOS
+El sitio oficial presenta soluciones para empresas, sector público, educación, salud, comercio e inmobiliario.
+
+METODOLOGÍA DE TRABAJO
+Descubrimos: entendemos el negocio, sus procesos, usuarios y objetivos.
+Diseñamos: definimos la arquitectura de la solución y la experiencia de usuario.
+Desarrollamos: construimos la solución con tecnologías modernas y seguras.
+Integramos: conectamos sistemas, datos, APIs y servicios existentes.
+Implementamos: llevamos la solución al entorno productivo.
+Evolucionamos: medimos resultados y mejoramos continuamente.
+
+GOVERNEX
+Governex es una plataforma de gobernanza corporativa para gestionar de forma estructurada procesos de gobierno corporativo, información, cumplimiento y toma de decisiones.
+El sitio la describe como una herramienta para simplificar, acelerar y apoyar el sistema de gestión.
+
+CASOS DE ÉXITO
+El sitio oficial presenta un caso de plataforma de gestión empresarial.
+Desafío: procesos manuales y dispersos.
+Solución: desarrollo de una plataforma web empresarial integrada.
+Resultado descrito: centralización de procesos y disponibilidad de información en tiempo real.
+
+TECNOLOGÍAS UTILIZADAS
+El sitio oficial menciona React, Node.js, Python, Django, PostgreSQL, MySQL, Docker, GitHub, Power BI y OpenAI.
+
+POLÍTICA DE COTIZACIÓN
+El valor de plataformas y consultorías se define después de un diagnóstico a la medida; no hay cotizaciones estandarizadas.
+La evaluación inicial se ofrece sin compromiso comercial.

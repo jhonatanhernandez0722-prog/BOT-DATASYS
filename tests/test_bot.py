@@ -96,6 +96,44 @@ class BotDocumentSearchTests(unittest.TestCase):
         self.assertIn("- E-commerce", response)
         self.assertIn("- Automatización de procesos", response)
 
+    def test_official_site_intents_select_the_requested_topics(self) -> None:
+        documents = {
+            "sitio.txt": (
+                "SERVICIOS COMPLEMENTARIOS\n"
+                "- Cloud y DevOps: infraestructura en la nube y despliegue continuo.\n"
+                "- Ciberseguridad: protección mediante buenas prácticas.\n"
+                "CLOUD Y DEVOPS\n"
+                "DataSys ofrece infraestructura en la nube, automatización y despliegue continuo.\n"
+                "GOVERNEX\n"
+                "Governex es una plataforma para gestionar gobierno corporativo, cumplimiento y decisiones.\n"
+                "POLÍTICA DE COTIZACIÓN\n"
+                "El valor se define después de un diagnóstico a la medida, sin cotizaciones estandarizadas.\n"
+                "SECTORES ATENDIDOS\n"
+                "Empresas, sector público, educación, salud, comercio e inmobiliario.\n"
+                "METODOLOGÍA DE TRABAJO\n"
+                "Descubrimos las necesidades, diseñamos, desarrollamos, integramos, implementamos y evolucionamos."
+            )
+        }
+
+        cloud = get_bot_response("¿Qué servicios de Cloud ofrecen?", documents)
+        complementary = get_bot_response(
+            "¿Qué servicios complementarios ofrecen?", documents
+        )
+        governex = get_bot_response("¿Qué es Governex?", documents)
+        sectors = get_bot_response("¿A qué sectores atienden?", documents)
+        methodology = get_bot_response("¿Cómo trabajan?", documents)
+        quote = get_bot_response("¿Cómo solicito una cotización?", documents)
+
+        self.assertIn("infraestructura en la nube", cloud)
+        self.assertIn("CLOUD Y DEVOPS", cloud)
+        self.assertIn("Ciberseguridad", complementary)
+        self.assertIn("Governex es una plataforma", governex)
+        self.assertIn("educación", sectors)
+        self.assertIn("Descubrimos", methodology)
+        self.assertIn("diagnóstico a la medida", quote)
+        self.assertIn("sin cotizaciones estandarizadas", quote)
+        self.assertNotIn("certificación ISO", complementary)
+
     def test_data_and_development_service_questions_show_their_full_group(self) -> None:
         documents = {
             "services.docx": (

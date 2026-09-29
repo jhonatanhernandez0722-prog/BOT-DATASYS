@@ -50,7 +50,7 @@ La página disponible en `/` permite conversar con el bot desde un navegador y c
 
 ## Documentos de la empresa
 
-Coloca los archivos Word `.docx` en `public/documents/`, en la raíz del proyecto (al mismo nivel que `app/`). No es necesario registrar sus nombres en el código. Se leen los párrafos no vacíos; archivos de otros formatos se ignoran. Un documento dañado se omite y se registra en el log, sin impedir que se lean los demás.
+Coloca los archivos Word `.docx` o fichas de texto UTF-8 `.txt` en `public/documents/`, en la raíz del proyecto (al mismo nivel que `app/`). No es necesario registrar sus nombres en el código. Se leen los párrafos no vacíos de Word y el contenido de texto; otros formatos se ignoran. Un documento dañado se omite y se registra en el log, sin impedir que se lean los demás.
 
 El backend conserva el texto completo de cada documento en memoria. Los endpoints muestran como máximo los primeros 1000 caracteres por documento e indican `"truncated": true` cuando se ha limitado el contenido.
 

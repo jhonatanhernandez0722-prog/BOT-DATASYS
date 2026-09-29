@@ -470,6 +470,12 @@ def _find_service_catalog(
         if development:
             sections.append("NUESTROS SERVICIOS DE DESARROLLO\n" + development)
 
+        additional_services = _find_context_section(
+            documents, "servicios_complementarios"
+        )
+        if additional_services:
+            sections.append(additional_services)
+
     return "\n\n".join(sections) if sections else None
 
 
