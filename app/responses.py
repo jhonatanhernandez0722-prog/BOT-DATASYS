@@ -454,12 +454,32 @@ DATA_STAGE_INTENTS = {
     "data_decidir": (4, "Decidir", ("decidir", "decision")),
 }
 
-FALLBACK_RESPONSE = (
-    "No encontré información sobre esa pregunta en los documentos disponibles. "
-    "Por favor, comunícate con un asesor."
+GREETING_PHRASES = frozenset(
+    {
+        "hola",
+        "holi",
+        "buenas",
+        "buen dia",
+        "buenos dias",
+        "buenas tardes",
+        "buenas noches",
+        "saludos",
+        "hey",
+        "hola que tal",
+        "hola como estas",
+        "que tal",
+    }
 )
 
-MINIMUM_RELEVANCE_SCORE = 3
+GREETING_RESPONSE = (
+    "¡Hola! Soy el asistente de DataSys Latam. Puedo ayudarte con información "
+    "sobre la empresa, sus servicios y formas de contacto. ¿Qué te gustaría saber?"
+)
+
+DOCUMENTS_UNAVAILABLE_RESPONSE = (
+    "La base de información no está disponible en este momento. Inténtalo de nuevo más tarde."
+)
+
 MAX_RESPONSE_FRAGMENT_LENGTH = 500
 MAX_CONTEXT_SECTION_LENGTH = 900
 

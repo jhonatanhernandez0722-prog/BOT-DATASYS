@@ -1,7 +1,7 @@
 import unittest
 
 from app.bot import get_bot_response
-from app.responses import FALLBACK_RESPONSE
+from app.responses import DOCUMENTS_UNAVAILABLE_RESPONSE, GREETING_RESPONSE
 
 
 class BotDocumentSearchTests(unittest.TestCase):
@@ -32,7 +32,20 @@ class BotDocumentSearchTests(unittest.TestCase):
     def test_figurative_where_does_not_count_as_location_evidence(self) -> None:
         documents = {"empresa.docx": "La tecnología trabaja donde su equipo la necesita."}
         self.assertEqual(
-            get_bot_response("¿Dónde están ubicados?", documents), FALLBACK_RESPONSE
+            get_bot_response("¿Dónde están ubicados?", documents),
+            "La tecnología trabaja donde su equipo la necesita.",
+        )
+
+    def test_greetings_have_a_dedicated_reply_and_mixed_questions_keep_their_intent(self) -> None:
+        for greeting in ("Hola", "¡Hola!", "Buenos días", "Hola, ¿qué tal?"):
+            with self.subTest(greeting=greeting):
+                self.assertEqual(
+                    get_bot_response(greeting, self.documents), GREETING_RESPONSE
+                )
+
+        self.assertEqual(
+            get_bot_response("Hola, ¿qué servicios ofrecen?", self.documents),
+            "Ofrecemos consultoría, analítica de datos y automatización.",
         )
 
     def test_finds_services(self) -> None:
@@ -190,24 +203,29 @@ class BotDocumentSearchTests(unittest.TestCase):
         self.assertIn("DEV 03 — RESCATE, MANTENIMIENTO Y EVOLUCIÓN (Para Proyectos Externos)", response)
         self.assertNotIn("Construimos", response)
 
-    def test_unknown_question_uses_fallback(self) -> None:
-        self.assertEqual(
-            get_bot_response("¿Cuánto cuesta el almuerzo?", self.documents),
-            FALLBACK_RESPONSE,
-        )
+    def test_unknown_question_uses_the_closest_available_document_fragment(self) -> None:
+        response = get_bot_response("¿Cuánto cuesta el almuerzo?", self.documents)
+        self.assertIn(response, self.documents["empresa.docx"].splitlines())
 
-    def test_known_intent_without_document_match_uses_fallback(self) -> None:
+    def test_known_intent_without_exact_match_uses_the_closest_fragment(self) -> None:
         documents = {"empresa.docx": "Ofrecemos consultoría de datos."}
         self.assertEqual(
-            get_bot_response("¿Cuál es el horario?", documents), FALLBACK_RESPONSE
+            get_bot_response("¿Cuál es el horario?", documents),
+            "Ofrecemos consultoría de datos.",
         )
 
-    def test_existing_intents_without_document_match_use_fallback(self) -> None:
+    def test_existing_intents_without_exact_match_use_available_document_content(self) -> None:
         for question in ("Preguntas frecuentes", "Quiero hablar con un asesor"):
             with self.subTest(question=question):
-                self.assertEqual(
-                    get_bot_response(question, self.documents), FALLBACK_RESPONSE
+                self.assertIn(
+                    get_bot_response(question, self.documents),
+                    self.documents["empresa.docx"].splitlines(),
                 )
+
+    def test_empty_documents_use_an_infrastructure_message(self) -> None:
+        self.assertEqual(
+            get_bot_response("¿Quiénes son?", {}), DOCUMENTS_UNAVAILABLE_RESPONSE
+        )
 
     def test_result_is_deterministic_across_document_order(self) -> None:
         documents = {
@@ -287,18 +305,15 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
             with self.subTest(question=question):
                 self.assertIn(expected_section, get_bot_response(question, documents))
 
-    def test_generic_price_question_does_not_match_business_quote_policy(self) -> None:
-        self.assertEqual(
-            get_bot_response(
-                "¿Cuánto cuesta el almuerzo?",
-                {
-                    "comercial.txt": (
-                        "El valor de servicios y proyectos se define tras un diagnóstico a la medida."
-                    )
-                },
-            ),
-            FALLBACK_RESPONSE,
-        )
+    def test_unrelated_price_question_uses_the_closest_company_fragment(self) -> None:
+        documents = {
+            "comercial.txt": (
+                "El valor de servicios y proyectos se define tras un diagnóstico a la medida."
+            )
+        }
+        response = get_bot_response("¿Cuánto cuesta el almuerzo?", documents)
+        self.assertIn("diagnóstico a la medida", response)
+        self.assertNotIn("No encontré información", response)
 
     def test_unknown_but_related_question_returns_closest_fragment(self) -> None:
         documents = {
@@ -312,15 +327,11 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
             "¿Me pueden contar del análisis exploratorio de datos?", documents
         )
         self.assertIn("análisis exploratorio de datos", response)
-        self.assertNotEqual(response, FALLBACK_RESPONSE)
+        self.assertTrue(response)
 
-    def test_unrelated_ambiguous_question_still_uses_fallback(self) -> None:
+    def test_unrelated_greeting_uses_its_dedicated_response(self) -> None:
         self.assertEqual(
-            get_bot_response(
-                "Hola, ¿qué tal?",
-                {"empresa.docx": "DataSys ofrece consultoría y desarrollo de software."},
-            ),
-            FALLBACK_RESPONSE,
+            get_bot_response("Hola, ¿qué tal?", {}), GREETING_RESPONSE
         )
 
     def test_company_name_and_nit(self) -> None:

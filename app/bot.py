@@ -7,14 +7,15 @@ from app.responses import (
     CONTACT_FIELD_PATTERNS,
     COMPANY_LEGAL_NAME,
     DATA_STAGE_INTENTS,
-    FALLBACK_RESPONSE,
+    DOCUMENTS_UNAVAILABLE_RESPONSE,
+    GREETING_PHRASES,
+    GREETING_RESPONSE,
     INTENT_CONTEXT_SECTIONS,
     INTENT_KEYWORDS,
     INTENT_SECTION_HEADINGS,
     INTENT_SEARCH_TERMS,
     MAX_CONTEXT_SECTION_LENGTH,
     MAX_RESPONSE_FRAGMENT_LENGTH,
-    MINIMUM_RELEVANCE_SCORE,
     SECTION_BOUNDARY_HEADINGS,
     SERVICE_LEVEL_INTENTS,
 )
@@ -70,6 +71,10 @@ def _normalize_text(text: str) -> str:
     )
     without_punctuation = re.sub(r"[^\w\s]", " ", without_accents)
     return re.sub(r"\s+", " ", without_punctuation).strip()
+
+
+def _is_greeting(message: str) -> bool:
+    return _normalize_text(message) in GREETING_PHRASES
 
 
 def _normalize_tokens(text: str) -> set[str]:
@@ -538,9 +543,41 @@ def _score_fragment(
     return intent_matches * 2 + query_matches
 
 
+def _find_closest_fragment(
+    documents: Mapping[str, str],
+    message: str,
+    intent: str | None,
+) -> str | None:
+    query_tokens = _normalize_tokens(message)
+    intent_terms = _normalize_tokens(
+        " ".join(INTENT_SEARCH_TERMS.get(intent, [])) if intent else ""
+    )
+    company_terms = _normalize_tokens(" ".join(INTENT_SEARCH_TERMS["quienes_somos"]))
+    best_fragment = None
+    best_rank = None
+
+    for _, content in sorted(
+        documents.items(), key=lambda document: (document[0].casefold(), document[0])
+    ):
+        for fragment in _iter_fragments(content):
+            fragment_tokens = _normalize_tokens(fragment)
+            rank = (
+                _score_fragment(fragment, query_tokens, intent_terms),
+                len(fragment_tokens & company_terms),
+            )
+            if best_rank is None or rank > best_rank:
+                best_fragment = fragment
+                best_rank = rank
+
+    return best_fragment
+
+
 def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -> str:
+    if _is_greeting(message):
+        return GREETING_RESPONSE
+
     if not documents:
-        return FALLBACK_RESPONSE
+        return DOCUMENTS_UNAVAILABLE_RESPONSE
 
     intent = _find_intent(message)
 
@@ -561,13 +598,19 @@ def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -
             return catalog
 
     if intent in SERVICE_LEVEL_INTENTS:
-        return _find_service_levels(documents, intent) or FALLBACK_RESPONSE
+        service_levels = _find_service_levels(documents, intent)
+        if service_levels is not None:
+            return service_levels
 
     if intent in DATA_STAGE_INTENTS:
-        return _find_data_stage_services(documents, intent) or FALLBACK_RESPONSE
+        stage_services = _find_data_stage_services(documents, intent)
+        if stage_services is not None:
+            return stage_services
 
     if intent == "nombre_empresa":
-        return _find_company_name(documents) or FALLBACK_RESPONSE
+        company_name = _find_company_name(documents)
+        if company_name is not None:
+            return company_name
 
     if intent in CONTACT_FIELD_PATTERNS or intent == "contacto":
         contact_response = _find_contact_response(documents, intent)
@@ -583,20 +626,4 @@ def get_bot_response(message: str, documents: Mapping[str, str] | None = None) -
     if section is not None:
         return section
 
-    query_tokens = _normalize_tokens(message)
-    intent_terms = _normalize_tokens(
-        " ".join(INTENT_SEARCH_TERMS.get(intent, [])) if intent else ""
-    )
-    best_fragment = None
-    best_score = MINIMUM_RELEVANCE_SCORE - 1
-
-    for _, content in sorted(
-        documents.items(), key=lambda document: (document[0].casefold(), document[0])
-    ):
-        for fragment in _iter_fragments(content):
-            score = _score_fragment(fragment, query_tokens, intent_terms)
-            if score > best_score:
-                best_fragment = fragment
-                best_score = score
-
-    return best_fragment if best_fragment is not None else FALLBACK_RESPONSE
+    return _find_closest_fragment(documents, message, intent) or DOCUMENTS_UNAVAILABLE_RESPONSE
