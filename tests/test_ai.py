@@ -7,9 +7,10 @@ from app.assistant import get_assistant_response
 
 class AIProviderTests(unittest.IsolatedAsyncioTestCase):
     def test_system_prompt_restricts_chat_to_datasys(self) -> None:
-        self.assertIn("exclusivamente para consultas relacionadas con DataSys", SYSTEM_INSTRUCTIONS)
+        self.assertIn("# TEMAS AJENOS A DATASYS", SYSTEM_INSTRUCTIONS)
         self.assertIn(
-            "no respondas ese tema ni des consejos generales", SYSTEM_INSTRUCTIONS
+            "No proporciones consejos generales sobre temas completamente ajenos",
+            SYSTEM_INSTRUCTIONS,
         )
 
     async def test_openai_failure_uses_gemini_with_document_context(self) -> None:
