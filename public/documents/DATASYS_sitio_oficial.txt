@@ -2,6 +2,9 @@ DATOS CURADOS DEL SITIO OFICIAL
 Fuente: https://datasyslatam.com/
 Revisado: 2026-09-28
 
+QUIÉNES SOMOS
+Somos DataSys Latam Group, una startup tecnológica que transforma retos empresariales en soluciones digitales. Integramos software, datos e inteligencia artificial para optimizar procesos y ayudar a las empresas a tomar mejores decisiones.
+
 SERVICIOS COMPLEMENTARIOS
 - Consultoría tecnológica: analiza el negocio y diseña una estrategia tecnológica adecuada a sus necesidades.
 - Integración de sistemas: conecta sistemas, datos, APIs y servicios existentes.

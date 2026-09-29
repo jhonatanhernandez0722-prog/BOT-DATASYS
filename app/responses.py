@@ -369,6 +369,7 @@ INTENT_SECTION_HEADINGS = {
 }
 
 INTENT_CONTEXT_SECTIONS = {
+    "quienes_somos": ("quienes somos", None),
     "servicios_complementarios": ("servicios complementarios", None),
     "consultoria_tecnologica": ("consultoria tecnologica", None),
     "integracion_sistemas": ("integracion de sistemas", None),
@@ -401,6 +402,7 @@ INTENT_CONTEXT_SECTIONS = {
 }
 
 SECTION_BOUNDARY_HEADINGS = [
+    "quienes somos",
     "servicios complementarios",
     "consultoria tecnologica",
     "integracion de sistemas",

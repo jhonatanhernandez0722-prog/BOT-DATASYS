@@ -247,8 +247,9 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
     def test_company_overview_accepts_ambiguous_wording(self) -> None:
         documents = {
             "perfil.docx": (
-                "DataSys Latam Group S.A.S.\n"
-                "Es un startup tecnológico que integra software, inteligencia artificial y datos."
+                "QUIÉNES SOMOS\n"
+                "Somos DataSys Latam Group, una startup tecnológica que transforma retos empresariales en soluciones digitales. "
+                "Integramos software, datos e inteligencia artificial para optimizar procesos y ayudar a las empresas a tomar mejores decisiones."
             ),
             "data.docx": (
                 "DATA ANALYTICS Y BIG DATA\n"
@@ -269,7 +270,9 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
             "Háblame de la empresa",
         ):
             with self.subTest(question=question):
-                self.assertIn("startup tecnológico", get_bot_response(question, documents))
+                response = get_bot_response(question, documents)
+                self.assertIn("startup tecnológica", response)
+                self.assertIn("soluciones digitales", response)
 
         specific = get_bot_response(
             "¿A qué se dedica la empresa en Data Analytics?", documents
