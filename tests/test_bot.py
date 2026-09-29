@@ -460,6 +460,7 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
     def test_contact_questions_extract_each_field(self) -> None:
         documents = {
             "contacto.docx": (
+                "NIT: 902051334-5\n"
                 "Teléfono: +57 324 624 9237\n"
                 "Correo electrónico: contacto@datasyslatam.com\n"
                 "Sitio web: www.datasyslatam.com\n"
@@ -486,6 +487,7 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
     def test_contact_questions_support_common_wording(self) -> None:
         documents = {
             "contacto.docx": (
+                "NIT: 902051334-5\n"
                 "Teléfono: +57 324 624 9237\n"
                 "Correo electrónico: contacto@datasyslatam.com\n"
                 "Sitio web: www.datasyslatam.com\n"
@@ -496,6 +498,14 @@ class KnowledgeBaseIntentTests(unittest.TestCase):
             "+57 324 624 9237",
             get_bot_response("¿Cuál es el número de contacto?", documents),
         )
+        for question in (
+            "Hola, ¿cuál es su número?",
+            "¿Cuál es el número para contactarlos?",
+            "¿Cuál es su número de WhatsApp?",
+        ):
+            with self.subTest(question=question):
+                self.assertIn("+57 324 624 9237", get_bot_response(question, documents))
+        self.assertIn("NIT:", get_bot_response("¿Cuál es el NIT?", documents))
         self.assertIn(
             "contacto@datasyslatam.com",
             get_bot_response("¿Cuál es el email de contacto?", documents),

@@ -236,8 +236,10 @@ INTENT_KEYWORDS = {
         "valores de datasys",
     ],
     "telefono": [
-        "telefono", "numero de telefono", "celular", "numero para llamar",
-        "telefono de contacto", "numero de contacto", "whatsapp",
+        "telefono", "numero", "numero de telefono", "numero telefonico",
+        "su numero", "mi numero", "celular", "numero para llamar",
+        "numero para contactarlos", "telefono de contacto", "numero de contacto",
+        "numero de whatsapp", "whatsapp", "como los llamo",
     ],
     "correo": [
         "correo", "correo electronico", "email", "correo de contacto",
